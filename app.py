@@ -184,109 +184,109 @@ if df is not None:
             pdf.cell(0, 8, f"{t} ............................................... {i + 2}", ln=True)
 
         
-# --- 1.4 Tabular Summary by COFOG ---
-pdf.add_page()
-pdf.set_font("Arial", "B", 14)
-pdf.cell(0, 10, "1.4 Tabular Summary by COFOG", ln=True)
-pdf.set_font("Arial", "", 10)
-cofog_table = mda_df.groupby('COFOG')[['TOTAL_PROGRAMMES', 'TOTAL_KPIs']].sum().reset_index()
-for _, row in cofog_table.iterrows():
-    line = f"{row['COFOG']} | Programmes: {row['TOTAL_PROGRAMMES']} | KPIs: {row['TOTAL_KPIs']}"
-    pdf.multi_cell(0, 8, line)
+        # --- 1.4 Tabular Summary by COFOG ---
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(0, 10, "1.4 Tabular Summary by COFOG", ln=True)
+        pdf.set_font("Arial", "", 10)
+        cofog_table = mda_df.groupby('COFOG')[['TOTAL_PROGRAMMES', 'TOTAL_KPIs']].sum().reset_index()
+        for _, row in cofog_table.iterrows():
+            line = f"{row['COFOG']} | Programmes: {row['TOTAL_PROGRAMMES']} | KPIs: {row['TOTAL_KPIs']}"
+            pdf.multi_cell(0, 8, line)
 
-# --- 1.5 Graphical Summary by COFOG ---
-fig_cofog = px.bar(
-    cofog_table,
-    x="COFOG",
-    y=["TOTAL_PROGRAMMES", "TOTAL_KPIs"],
-    barmode="group",
-    title="1.5 Graphical Summary by COFOG"
-)
-add_chart(fig_cofog, "1.5 Graphical Summary by COFOG")
-
-
-# --- 1.4 Tabular Summary by COFOG ---
-pdf.add_page()
-pdf.set_font("Arial", "B", 14)
-pdf.cell(0, 10, "1.4 Tabular Summary by COFOG", ln=True)
-pdf.set_font("Arial", "", 10)
-cofog_table = mda_df.groupby('COFOG')[['TOTAL_PROGRAMMES', 'TOTAL_KPIs']].sum().reset_index()
-for _, row in cofog_table.iterrows():
-    line = f"{row['COFOG']} | Programmes: {row['TOTAL_PROGRAMMES']} | KPIs: {row['TOTAL_KPIs']}"
-    pdf.multi_cell(0, 8, line)
-
-# --- 1.5 Graphical Summary by COFOG ---
-fig_cofog = px.bar(
-    cofog_table,
-    x="COFOG",
-    y=["TOTAL_PROGRAMMES", "TOTAL_KPIs"],
-    barmode="group",
-    title="1.5 Graphical Summary by COFOG"
-)
-add_chart(fig_cofog, "1.5 Graphical Summary by COFOG")
-
-# --- 2.0 MDA Chart by Sector (All COFOG) ---
-for sector in mda_df['COFOG'].unique():
-    filtered_mda_df = mda_df[mda_df['COFOG'] == sector]
-    fig_sector = px.bar(
-        filtered_mda_df,
-        x="MDA REVISED",
-        y=["AVG_OUTPUT_PERF", "AVG_BUDGET_PERF"],
-        barmode="group",
-        title=f"{sector} Sector MDA Performance"
-    )
-    add_chart(fig_sector, f"2.0 MDA Chart by Sector – {sector}")
-
-# --- 3.0 Annexure for All MDA in All COFOG ---
-for sector in df['COFOG'].unique():
-    for mda in df[df['COFOG'] == sector]['MDA REVISED'].unique():
-        ann_df = df[(df['COFOG'] == sector) & (df['MDA REVISED'] == mda)]
-        avg_output = ann_df['Q1 PMR Output Performance'].mean()
-        avg_planned = ann_df['Planned Q1 Perf'].mean()
-        avg_budget = (ann_df['Budget Released as at Q1'].sum() / ann_df['Y2025 Approved Budget'].sum()) * 100
-
-        avg_output = min(avg_output, 100)
-        avg_planned = min(avg_planned, 100)
-        avg_budget = min(avg_budget, 100)
-
-        fig_ann = go.Figure()
-        fig_ann.add_trace(go.Bar(
-            x=[avg_output],
-            y=["Output Performance"],
-            orientation='h',
-            text=[f"{avg_output:.1f}% (Planned Perf: {avg_planned:.1f}%)"],
-            marker_color=perf_color(avg_output),
-            name="Output"
-        ))
-        fig_ann.add_trace(go.Bar(
-            x=[avg_budget],
-            y=["Budget Performance"],
-            orientation='h',
-            text=[f"{avg_budget:.1f}%"],
-            marker_color=perf_color(avg_budget),
-            name="Budget"
-        ))
-        fig_ann.update_layout(
-            title=f"{mda} - Performance Overview",
-            xaxis=dict(title="Performance (%)", range=[0, 100]),
-            height=300,
-            barmode='group'
+        # --- 1.5 Graphical Summary by COFOG ---
+        fig_cofog = px.bar(
+            cofog_table,
+            x="COFOG",
+            y=["TOTAL_PROGRAMMES", "TOTAL_KPIs"],
+            barmode="group",
+            title="1.5 Graphical Summary by COFOG"
         )
-        add_chart(fig_ann, f"3.0 Annexure Chart – {mda}")
-        add_table(ann_df)
+        add_chart(fig_cofog, "1.5 Graphical Summary by COFOG")
 
 
-        draw_text_page("1.1 PMR Overview", overview_text)
-        draw_text_page("1.2 PMR Objectives", objectives_text)
-        draw_text_page("1.3 Executive Summary", summary_text)
-        add_chart(fig_sector, "2.0 MDA Chart by Sector")
-        add_chart(fig_ann, f"3.0 {mda} Annexure Chart")
-        add_table(ann_df)
+        # --- 1.4 Tabular Summary by COFOG ---
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(0, 10, "1.4 Tabular Summary by COFOG", ln=True)
+        pdf.set_font("Arial", "", 10)
+        cofog_table = mda_df.groupby('COFOG')[['TOTAL_PROGRAMMES', 'TOTAL_KPIs']].sum().reset_index()
+        for _, row in cofog_table.iterrows():
+            line = f"{row['COFOG']} | Programmes: {row['TOTAL_PROGRAMMES']} | KPIs: {row['TOTAL_KPIs']}"
+            pdf.multi_cell(0, 8, line)
 
-        # --- FINAL PDF DOWNLOAD ---
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
-            pdf.output(tmpfile.name)
-            with open(tmpfile.name, "rb") as f:
-                st.download_button("⬇️ Download Final PDF", data=f.read(), file_name=f"PMR_Report_{quarter}_{year}.pdf", mime="application/pdf")
-else:
-    st.info("Please upload a dataset to get started.")
+        # --- 1.5 Graphical Summary by COFOG ---
+        fig_cofog = px.bar(
+            cofog_table,
+            x="COFOG",
+            y=["TOTAL_PROGRAMMES", "TOTAL_KPIs"],
+            barmode="group",
+            title="1.5 Graphical Summary by COFOG"
+        )
+        add_chart(fig_cofog, "1.5 Graphical Summary by COFOG")
+
+        # --- 2.0 MDA Chart by Sector (All COFOG) ---
+        for sector in mda_df['COFOG'].unique():
+            filtered_mda_df = mda_df[mda_df['COFOG'] == sector]
+            fig_sector = px.bar(
+                filtered_mda_df,
+                x="MDA REVISED",
+                y=["AVG_OUTPUT_PERF", "AVG_BUDGET_PERF"],
+                barmode="group",
+                title=f"{sector} Sector MDA Performance"
+            )
+            add_chart(fig_sector, f"2.0 MDA Chart by Sector – {sector}")
+
+        # --- 3.0 Annexure for All MDA in All COFOG ---
+        for sector in df['COFOG'].unique():
+            for mda in df[df['COFOG'] == sector]['MDA REVISED'].unique():
+                ann_df = df[(df['COFOG'] == sector) & (df['MDA REVISED'] == mda)]
+                avg_output = ann_df['Q1 PMR Output Performance'].mean()
+                avg_planned = ann_df['Planned Q1 Perf'].mean()
+                avg_budget = (ann_df['Budget Released as at Q1'].sum() / ann_df['Y2025 Approved Budget'].sum()) * 100
+
+                avg_output = min(avg_output, 100)
+                avg_planned = min(avg_planned, 100)
+                avg_budget = min(avg_budget, 100)
+
+                fig_ann = go.Figure()
+                fig_ann.add_trace(go.Bar(
+                    x=[avg_output],
+                    y=["Output Performance"],
+                    orientation='h',
+                    text=[f"{avg_output:.1f}% (Planned Perf: {avg_planned:.1f}%)"],
+                    marker_color=perf_color(avg_output),
+                    name="Output"
+                ))
+                fig_ann.add_trace(go.Bar(
+                    x=[avg_budget],
+                    y=["Budget Performance"],
+                    orientation='h',
+                    text=[f"{avg_budget:.1f}%"],
+                    marker_color=perf_color(avg_budget),
+                    name="Budget"
+                ))
+                fig_ann.update_layout(
+                    title=f"{mda} - Performance Overview",
+                    xaxis=dict(title="Performance (%)", range=[0, 100]),
+                    height=300,
+                    barmode='group'
+                )
+                add_chart(fig_ann, f"3.0 Annexure Chart – {mda}")
+                add_table(ann_df)
+
+
+                draw_text_page("1.1 PMR Overview", overview_text)
+                draw_text_page("1.2 PMR Objectives", objectives_text)
+                draw_text_page("1.3 Executive Summary", summary_text)
+                add_chart(fig_sector, "2.0 MDA Chart by Sector")
+                add_chart(fig_ann, f"3.0 {mda} Annexure Chart")
+                add_table(ann_df)
+
+                # --- FINAL PDF DOWNLOAD ---
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
+                    pdf.output(tmpfile.name)
+                    with open(tmpfile.name, "rb") as f:
+                        st.download_button("⬇️ Download Final PDF", data=f.read(), file_name=f"PMR_Report_{quarter}_{year}.pdf", mime="application/pdf")
+        else:
+            st.info("Please upload a dataset to get started.")
