@@ -123,18 +123,18 @@ if df is not None:
 
         with st.spinner("⏳ Generating your PMR PDF report..."):
     # Optional: show a preview of what’s coming
-    st.markdown("📄 **Preview of what’s being added to the PDF:**")
-    st.markdown("""
-    - ✅ Cover Page
-    - ✅ Table of Contents
-    - ✅ 1.1 PMR Overview
-    - ✅ 1.2 PMR Objectives
-    - ✅ 1.3 Executive Summary
-    - ✅ 1.4 Tabular Summary by COFOG
-    - ✅ 1.5 Graphical Summary by COFOG
-    - ✅ 2.0 MDA Charts by Sector (All COFOGs)
-    - ✅ 3.0 Annexure Charts & Data (All MDAs)
-    """)
+        st.markdown("📄 **Preview of what’s being added to the PDF:**")
+        st.markdown("""
+        - ✅ Cover Page
+        - ✅ Table of Contents
+        - ✅ 1.1 PMR Overview
+        - ✅ 1.2 PMR Objectives
+        - ✅ 1.3 Executive Summary
+        - ✅ 1.4 Tabular Summary by COFOG
+        - ✅ 1.5 Graphical Summary by COFOG
+        - ✅ 2.0 MDA Charts by Sector (All COFOGs)
+        - ✅ 3.0 Annexure Charts & Data (All MDAs)
+        """)
         pio.kaleido.scope.default_format = "png"
 
         class PDF(FPDF):
