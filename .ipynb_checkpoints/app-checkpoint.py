@@ -120,6 +120,21 @@ if df is not None:
     # --- Export PDF ---
     st.header("🧾 Export Full Report to PDF")
     if st.button("📥 Download Final PDF"):
+
+        with st.spinner("⏳ Generating your PMR PDF report..."):
+    # Optional: show a preview of what’s coming
+    st.markdown("📄 **Preview of what’s being added to the PDF:**")
+    st.markdown("""
+    - ✅ Cover Page
+    - ✅ Table of Contents
+    - ✅ 1.1 PMR Overview
+    - ✅ 1.2 PMR Objectives
+    - ✅ 1.3 Executive Summary
+    - ✅ 1.4 Tabular Summary by COFOG
+    - ✅ 1.5 Graphical Summary by COFOG
+    - ✅ 2.0 MDA Charts by Sector (All COFOGs)
+    - ✅ 3.0 Annexure Charts & Data (All MDAs)
+    """)
         pio.kaleido.scope.default_format = "png"
 
         class PDF(FPDF):
@@ -282,6 +297,23 @@ if df is not None:
                 add_chart(fig_sector, "2.0 MDA Chart by Sector")
                 add_chart(fig_ann, f"3.0 {mda} Annexure Chart")
                 add_table(ann_df)
+
+                # --- Preview Report Summary and Charts ---
+
+                st.subheader("📋 Executive Summary Preview")
+                st.markdown(summary_text)
+
+                st.subheader("📊 Sector Performance Chart Preview")
+                st.plotly_chart(fig_sector, use_container_width=True)
+
+                st.subheader(f"📈 Annexure Chart Preview – {mda}")
+                st.plotly_chart(fig_ann, use_container_width=True)
+
+                st.subheader(f"📑 Annexure Data Table – {mda}")
+                st.dataframe(ann_df[['State Level Goal', 'Outcome', 'Programme / Project', 'Q1 Actual Output', 'Remarks']].head(10))
+
+                st.info("🔍 This preview shows a sample MDA. The final PDF will include **all COFOG sectors and MDAs**.")
+
 
                 # --- FINAL PDF DOWNLOAD ---
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
