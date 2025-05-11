@@ -68,10 +68,11 @@ df[kpi_col] = pd.to_numeric(df.get(kpi_col), errors="coerce")
 
 # Safely handle TPR Score and TPR Status
 if "Cummulative TPR Score" in df.columns:
-    df["TPR Score"] = pd.to_numeric(
-        df["Cummulative TPR Score"].astype(str).str.replace("%", "").str.strip(),
-        errors="coerce"
-    ) / 100
+    raw = df["Cummulative TPR Score"]
+    if raw.max() > 1:
+        df["TPR Score"] = pd.to_numeric(raw, errors="coerce") / 100
+    else:
+        df["TPR Score"] = pd.to_numeric(raw, errors="coerce")
 else:
     st.error("Column 'Cummulative TPR Score' not found in uploaded data.")
     st.stop()
