@@ -65,8 +65,7 @@ df[approved_col] = pd.to_numeric(df.get(approved_col), errors="coerce")
 df[released_col] = pd.to_numeric(df.get(released_col), errors="coerce")
 df[planned_col] = df.get(planned_col, pd.Series([None] * len(df))).astype(str).str.replace("%", "").astype(float)
 df[kpi_col] = pd.to_numeric(df.get(kpi_col), errors="coerce")
-df["TPR Score"] = pd.to_numeric(df.get("TPR Score"), errors="coerce")
-
+df["TPR Score"] = pd.to_numeric(df.get("Cummulative TPR Score"), errors="coerce")
 def tpr_category(score):
     if score >= 80: return "On Track"
     elif score >= 60: return "At Risk"
@@ -96,7 +95,7 @@ avg_budget = filtered_df[budget_col].mean(skipna=True)
 total_approved = filtered_df[approved_col].sum(skipna=True)
 total_released = filtered_df[released_col].sum(skipna=True)
 total_programmes = filtered_df["Programme / Project"].nunique()
-total_kpis = filtered_df[kpi_col].count()
+total_kpis = filtered_df["Full Year Output Targets for Programme / Project Activities"].count()
 avg_planned = filtered_df[planned_col].mean(skipna=True)
 
 col1, col2, col3, col4, col5 = st.columns(5)
