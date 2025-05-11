@@ -74,9 +74,21 @@ def tpr_category(score):
 
 df["TPR Status"] = df["TPR Score"].apply(tpr_category)
 
-# === Section: TPR Filter ===
-selected_tpr = st.sidebar.selectbox("Filter by TPR Status", ["All"] + sorted(df["TPR Status"].dropna().unique().tolist()))
-filtered_df = df if selected_tpr == "All" else df[df["TPR Status"] == selected_tpr]
+# === Section: Dashboard Filters ===
+st.subheader("Filters")
+
+colf1, colf2 = st.columns(2)
+tpr_options = ["All"] + sorted(df["TPR Status"].dropna().unique().tolist())
+selected_tpr = colf1.selectbox("TPR Status", tpr_options)
+
+mda_options = ["All"] + sorted(df[mda_col].dropna().unique().tolist())
+selected_mda = colf2.selectbox("MDA", mda_options)
+
+filtered_df = df.copy()
+if selected_tpr != "All":
+    filtered_df = filtered_df[filtered_df["TPR Status"] == selected_tpr]
+if selected_mda != "All":
+    filtered_df = filtered_df[filtered_df[mda_col] == selected_mda]
 
 # === Section: Summary Cards ===
 avg_output = filtered_df[output_col].mean(skipna=True)
@@ -115,7 +127,7 @@ col9.plotly_chart(donut_chart(avg_budget, "Budget Performance"), use_container_w
 
 # === Section: Drilldown Table ===
 st.subheader("Drilldown Table")
-drill_cols = ["Programme / Project", output_col, planned_col, budget_col, released_col, "TPR Status"]
+drill_cols = ["Programme / Project", output_col, planned_col, budget_col, released_col, "TPR Score", "TPR Status"]
 if "Sector" in df.columns: drill_cols.insert(0, "Sector")
 if mda_col in df.columns: drill_cols.insert(1, mda_col)
 
@@ -125,17 +137,24 @@ def style_drilldown(df, output_col, budget_col):
         if val >= 0.7: return "background-color: #b6e8b0"
         elif val >= 0.5: return "background-color: #fff4b3"
         return "background-color: #f4b9b9"
-    return df.style.applymap(highlight_perf, subset=[output_col, budget_col])
+    styled = df.style.applymap(highlight_perf, subset=[output_col, budget_col])
+    styled = styled.format({
+        output_col: "{:.0%}",
+        planned_col: "{:.0f}%",
+        budget_col: "{:.0%}",
+        "TPR Score": "{:.0%}",
+        approved_col: "₦{:,.0f}",
+        released_col: "₦{:,.0f}",
+    })
+    return styled
 
-styled_table = style_drilldown(filtered_df[drill_cols], output_col, budget_col)
-st.dataframe(styled_table, use_container_width=True)
+st.dataframe(style_drilldown(filtered_df[drill_cols], output_col, budget_col), use_container_width=True)
 
 # === Section: Pivot Table Explorer ===
 st.subheader("Explore with Pivot Table")
-all_columns = df.columns.tolist()
-row = st.selectbox("Row", all_columns)
-col = st.selectbox("Column", all_columns)
-val = st.selectbox("Value", all_columns)
+row = st.selectbox("Row", df.columns.tolist())
+col = st.selectbox("Column", df.columns.tolist())
+val = st.selectbox("Value", df.columns.tolist())
 aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
 
 if st.button("Generate Pivot Table"):
