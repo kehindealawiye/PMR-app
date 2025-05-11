@@ -66,25 +66,20 @@ df[released_col] = pd.to_numeric(df.get(released_col), errors="coerce")
 df[planned_col] = df.get(planned_col, pd.Series([None] * len(df))).astype(str).str.replace("%", "").astype(float)
 df[kpi_col] = pd.to_numeric(df.get(kpi_col), errors="coerce")
 
-# Safely handle TPR Score and TPR Status
+# Fix TPR Score handling (decimal vs whole number)
 if "Cummulative TPR Score" in df.columns:
-    raw = df["Cummulative TPR Score"]
-    if raw.max() > 1:
-        df["TPR Score"] = pd.to_numeric(raw, errors="coerce") / 100
-    else:
-        df["TPR Score"] = pd.to_numeric(raw, errors="coerce")
+    raw = pd.to_numeric(df["Cummulative TPR Score"], errors="coerce")
+    df["TPR Score"] = raw if raw.max() <= 1 else raw / 100
 else:
     st.error("Column 'Cummulative TPR Score' not found in uploaded data.")
     st.stop()
 
+# Assign TPR Status
 def tpr_category(score):
     if pd.isna(score): return None
-    if score >= 0.8:
-        return "On Track"
-    elif score >= 0.6:
-        return "At Risk"
-    else:
-        return "Off Track"
+    if score >= 0.8: return "On Track"
+    elif score >= 0.6: return "At Risk"
+    else: return "Off Track"
 
 df["TPR Status"] = df["TPR Score"].apply(tpr_category)
 
