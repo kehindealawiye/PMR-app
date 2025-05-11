@@ -13,32 +13,33 @@ st.title("📊 Performance Management Report Dashboard")
 # === File Upload or Google Sheets ===
 st.sidebar.header("🗂️ Report Settings")
 source_option = st.sidebar.radio("Choose data source:", ["Upload Excel File", "Enter Google Sheets Link"])
-uploaded_file = None
-sheet_link = None
+uploaded_file = st.sidebar.file_uploader("Upload your PMR Excel file", type=["xlsx"])
+sheet_link = st.sidebar.text_input("Paste Google Sheets link (public access required)")
 
-if source_option == "Upload Excel File":
-    uploaded_file = st.file_uploader("Upload your PMR Excel file", type=["xlsx"])
-elif source_option == "Enter Google Sheets Link":
-    sheet_link = st.text_input("Paste the Google Sheets link")
-
-if uploaded_file:
+# === Load Data ===
+df = None
+if source_option == "Upload Excel File" and uploaded_file:
     df = pd.read_excel(uploaded_file, sheet_name="PMR")
-elif sheet_link:
+elif source_option == "Enter Google Sheets Link" and sheet_link:
     try:
         sheet_id = sheet_link.split("/d/")[1].split("/")[0]
         csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&sheet=PMR"
         df = pd.read_csv(csv_url)
-    except:
-        st.error("Invalid link or sheet.")
+    except Exception as e:
+        st.error(f"Error loading Google Sheet: {str(e)}")
         st.stop()
-else:
-    st.info("Upload a file or provide a link to proceed.")
+
+if df is None:
+    st.info("Please upload an Excel file or enter a Google Sheets link to continue.")
     st.stop()
 
 # === Detect Quarters and Years ===
 columns = df.columns.tolist()
-available_quarters = sorted(set(re.findall(r"(Q\\d) Output Performance", " ".join(columns))))
-available_years = sorted(set(re.findall(r"Y(\\d{4}) Approved Budget", " ".join(columns))))
+available_quarters = sorted(set(re.findall(r"(Q\d) Output Performance", " ".join(columns))))
+available_years = sorted(set(re.findall(r"Y(\d{4}) Approved Budget", " ".join(columns))))
+if not available_quarters or not available_years:
+    st.error("Could not detect valid 'Qx Output Performance' or 'Yxxxx Approved Budget' columns.")
+    st.stop()
 
 quarter = st.sidebar.selectbox("Select Quarter", available_quarters)
 year = st.sidebar.selectbox("Select Year", available_years)
@@ -48,7 +49,13 @@ df[f"{quarter} Output Performance"] = pd.to_numeric(df.get(f"{quarter} Output Pe
 df[f"{quarter} Budget Performance"] = pd.to_numeric(df.get(f"{quarter} Budget Performance"), errors="coerce")
 df[f"Y{year} Approved Budget"] = pd.to_numeric(df.get(f"Y{year} Approved Budget"), errors="coerce")
 df[f"Budget Released as at {quarter}"] = pd.to_numeric(df.get(f"Budget Released as at {quarter}"), errors="coerce")
-df[f"Planned {quarter} Perf"] = df.get(f"Planned {quarter} Perf").str.replace("%", "", regex=False).astype(float)
+
+planned_col = f"Planned {quarter} Perf"
+if planned_col in df.columns:
+    df[planned_col] = df[planned_col].str.replace("%", "", regex=False).astype(float)
+else:
+    df[planned_col] = float("nan")
+
 df["Cummulative TPR score"] = pd.to_numeric(df.get("Cummulative TPR score"), errors="coerce")
 
 def tpr_category(score):
@@ -80,7 +87,7 @@ st.plotly_chart(fig_sector, use_container_width=True)
 
 # === Overall Bar Chart ===
 st.subheader(f"Overall {quarter} Output and Budget Performance")
-avg_planned_output = df[f"Planned {quarter} Perf"].mean(skipna=True)
+avg_planned_output = df[planned_col].mean(skipna=True)
 
 def get_color(value):
     if value >= 0.7: return "green"
