@@ -126,28 +126,52 @@ col9.plotly_chart(donut_chart(avg_budget, "Budget Performance"), use_container_w
 
 # === Section: Drilldown Table ===
 st.subheader("Drilldown Table")
-drill_cols = ["Programme / Project", output_col, planned_col, budget_col, released_col, "TPR Score", "TPR Status"]
-if "Sector" in df.columns: drill_cols.insert(0, "Sector")
-if mda_col in df.columns: drill_cols.insert(1, mda_col)
 
-def style_drilldown(df, output_col, budget_col):
+# Exact matching columns
+output_col = f"{quarter} Output Performance"
+budget_col = f"{quarter} Budget Performance"
+released_col = f"Budget Released as at {quarter}"
+planned_col = f"Planned {quarter} Perf"
+approved_col = f"Y{year} Approved Budget"
+tpr_score_col = "Cummulative TPR Score"
+
+drill_cols = [
+    "Programme / Project",
+    output_col,
+    planned_col,
+    budget_col,
+    released_col,
+    tpr_score_col,
+    "TPR Status"
+]
+if "Sector" in df.columns:
+    drill_cols.insert(0, "Sector")
+if "MDA REVISED" in df.columns:
+    drill_cols.insert(1, "MDA REVISED")
+
+def style_drilldown(df, output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col):
     def highlight_perf(val):
         if pd.isna(val): return ""
         if val >= 0.7: return "background-color: #b6e8b0"
         elif val >= 0.5: return "background-color: #fff4b3"
         return "background-color: #f4b9b9"
+
     styled = df.style.applymap(highlight_perf, subset=[output_col, budget_col])
     styled = styled.format({
         output_col: "{:.0%}",
-        planned_col: "{:.0f}%",
         budget_col: "{:.0%}",
-        "TPR Score": "{:.0%}",
+        planned_col: "{:.0f}%",
+        tpr_score_col: "{:.0%}",
         approved_col: "₦{:,.0f}",
         released_col: "₦{:,.0f}",
     })
     return styled
 
-st.dataframe(style_drilldown(filtered_df[drill_cols], output_col, budget_col), use_container_width=True)
+# Ensure columns exist before applying
+available_cols = [col for col in drill_cols if col in filtered_df.columns]
+styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col)
+st.dataframe(styled_table, use_container_width=True)
+
 
 # === Section: Pivot Table Explorer ===
 st.subheader("Explore with Pivot Table")
