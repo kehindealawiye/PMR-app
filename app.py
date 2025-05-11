@@ -65,10 +65,12 @@ df[approved_col] = pd.to_numeric(df.get(approved_col), errors="coerce")
 df[released_col] = pd.to_numeric(df.get(released_col), errors="coerce")
 df[planned_col] = df.get(planned_col, pd.Series([None] * len(df))).astype(str).str.replace("%", "").astype(float)
 df[kpi_col] = pd.to_numeric(df.get(kpi_col), errors="coerce")
-df["TPR Score"] = pd.to_numeric(df.get("Cummulative TPR Score"), errors="coerce")
+df["TPR Score"] = pd.to_numeric(df.get("Cummulative TPR Score"), errors="coerce") / 100
 def tpr_category(score):
-    if score >= 80: return "On Track"
-    elif score >= 60: return "At Risk"
+    if pd.isna(score):
+        return None
+    if score >= 0.8: return "On Track"
+    elif score >= 0.6: return "At Risk"
     return "Off Track"
 
 df["TPR Status"] = df["TPR Score"].apply(tpr_category)
@@ -152,19 +154,28 @@ if "MDA REVISED" in df.columns:
 def style_drilldown(df, output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col):
     def highlight_perf(val):
         if pd.isna(val): return ""
-        if val >= 0.7: return "background-color: #b6e8b0"
-        elif val >= 0.5: return "background-color: #fff4b3"
+        if val >= 0.7: return "background-color: #b6e8b0"  # green
+        elif val >= 0.5: return "background-color: #fff4b3"  # amber
+        return "background-color: #f4b9b9"  # red
+
+    def highlight_tpr(val):
+        if pd.isna(val): return ""
+        if val >= 0.8: return "background-color: #b6e8b0"
+        elif val >= 0.6: return "background-color: #fff4b3"
         return "background-color: #f4b9b9"
 
-    styled = df.style.applymap(highlight_perf, subset=[output_col, budget_col])
-    styled = styled.format({
-        output_col: "{:.0%}",
-        budget_col: "{:.0%}",
-        planned_col: "{:.0f}%",
-        tpr_score_col: "{:.0%}",
-        approved_col: "₦{:,.0f}",
-        released_col: "₦{:,.0f}",
-    })
+    styled = df.style\
+        .applymap(highlight_perf, subset=[output_col, budget_col])\
+        .applymap(highlight_tpr, subset=[tpr_score_col])\
+        .format({
+            output_col: "{:.0%}",
+            budget_col: "{:.0%}",
+            planned_col: "{:.0f}%",
+            tpr_score_col: "{:.0%}",
+            approved_col: "₦{:,.0f}",
+            released_col: "₦{:,.0f}",
+        })
+
     return styled
 
 # Ensure columns exist before applying
