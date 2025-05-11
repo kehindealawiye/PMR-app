@@ -65,6 +65,14 @@ df[approved_col] = pd.to_numeric(df.get(approved_col), errors="coerce")
 df[released_col] = pd.to_numeric(df.get(released_col), errors="coerce")
 df[planned_col] = df.get(planned_col, pd.Series([None] * len(df))).astype(str).str.replace("%", "").astype(float)
 df[kpi_col] = pd.to_numeric(df.get(kpi_col), errors="coerce")
+
+# Safely handle TPR Score and TPR Status
+if "Cummulative TPR Score" in df.columns:
+    df["TPR Score"] = pd.to_numeric(df["Cummulative TPR Score"], errors="coerce") / 100
+else:
+    st.error("Column 'Cummulative TPR Score' not found in uploaded data.")
+    st.stop()
+
 def tpr_category(score):
     if pd.isna(score): return None
     if score >= 0.8:
