@@ -6,3 +6,4 @@ fpdf
 kaleido
 openpyxl
 Pillow
+pivottablejs
