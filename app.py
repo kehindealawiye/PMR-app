@@ -251,7 +251,8 @@ aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
 
 if st.button("Generate Pivot Table"):
     try:
-        df[val] = pd.to_numeric(df[val], errors="coerce")
+        # Coerce value column in the filtered data
+        filtered_df[val] = pd.to_numeric(filtered_df[val], errors="coerce")
 
         pivot = pd.pivot_table(
             filtered_df,
@@ -261,10 +262,10 @@ if st.button("Generate Pivot Table"):
             aggfunc=aggfunc
         )
 
-        # Format results
+        # Format display
         if any(k in val for k in ["Performance", "TPR Score"]):
             styled = pivot.style.format("{:.0%}")
-        elif "Budget" in val or "Approved" in val or "Released" in val:
+        elif any(k in val for k in ["Budget", "Approved", "Released"]):
             styled = pivot.style.format("₦{:,.0f}")
         else:
             styled = pivot
