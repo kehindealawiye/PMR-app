@@ -241,8 +241,6 @@ st.dataframe(styled_table, use_container_width=True)
 # === Section: Pivot Table Explorer ===
 st.subheader("Explore with Pivot Table")
 
-st.markdown("Use the options below to generate a pivot table from the filtered data.")
-
 col1, col2 = st.columns(2)
 rows = col1.multiselect("Row(s)", df.columns.tolist())
 cols = col2.multiselect("Column(s)", df.columns.tolist())
@@ -258,8 +256,10 @@ if st.button("Generate Pivot Table"):
         st.warning("Please select at least one value column.")
         st.stop()
 
-    st.caption(f"Sample data from value columns after filtering:")
-    st.dataframe(filtered_df[val].dropna().head())
+    # Ensure value columns have at least some usable data
+    if all(filtered_df[v].dropna().empty for v in val):
+        st.warning("No usable data found in selected value columns after filtering.")
+        st.stop()
 
     try:
         for v in val:
@@ -273,21 +273,23 @@ if st.button("Generate Pivot Table"):
             aggfunc=aggfunc
         )
 
-        if pivot.empty:
-            st.warning("Pivot table returned no results. Try different combinations.")
-        else:
-            if len(val) == 1:
-                col = val[0]
-                if any(k in col for k in ["Performance", "TPR Score"]):
-                    styled = pivot.style.format({col: "{:.0%}"})
-                elif any(k in col for k in ["Budget", "Approved", "Released"]):
-                    styled = pivot.style.format({col: "₦{:,.0f}"})
-                else:
-                    styled = pivot
-            else:
-                styled = pivot  # Skip styling when multiple values
+        # Confirm pivot is not truly empty
+        if pivot.shape[0] == 0 or pivot.shape[1] == 0:
+            st.warning("Pivot table returned no rows or columns.")
+            st.stop()
 
+        # Format output
+        if len(val) == 1:
+            col = val[0]
+            if "Performance" in col or "TPR" in col:
+                styled = pivot.style.format({col: "{:.0%}"})
+            elif "Budget" in col or "Approved" in col or "Released" in col:
+                styled = pivot.style.format({col: "₦{:,.0f}"})
+            else:
+                styled = pivot
             st.dataframe(styled, use_container_width=True)
+        else:
+            st.dataframe(pivot, use_container_width=True)
 
     except Exception as e:
         st.error(f"Error generating pivot table: {str(e)}")
