@@ -305,36 +305,38 @@ if st.button("Generate Pivot Table"):
 st.subheader("Export PDF Summary")
 
 from datetime import datetime
+from fpdf import FPDF
+
+class PDF(FPDF):
+    def header(self):
+        try:
+            self.image("Lagos-logo.png", x=10, y=8, w=25)
+        except:
+            pass
 
 def encode_latin(text):
     return text.encode("latin-1", "ignore").decode("latin-1")
 
 if st.button("Generate Summary PDF"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
-        pdf = FPDF()
+        pdf = PDF(orientation="L")  # Landscape
         pdf.add_page()
 
-        # Logo and centered header
-        try:
-            pdf.image("Lagos-logo.png", x=10, y=8, w=25)
-        except:
-            pass  # Prevent error if logo is missing
-
+        # Title
         pdf.set_xy(40, 10)
         pdf.set_font("Arial", "B", 14)
         pdf.cell(0, 10, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), ln=True, align="C")
-        pdf.ln(15)
+        pdf.ln(20)
 
-        # MDA subheader (if any)
+        # Optional MDA subheader
         if selected_mda != "All":
             pdf.set_font("Arial", "B", 12)
             pdf.cell(0, 10, encode_latin(f"MDA: {selected_mda}"), ln=True)
+            pdf.ln(5)
 
-        # Block-style metrics
+        # Metric cards (3 per row)
         pdf.set_font("Arial", "B", 13)
         pdf.cell(0, 10, encode_latin("Summary Metrics"), ln=True)
-        pdf.set_fill_color(245, 245, 245)
-        pdf.set_draw_color(200, 200, 200)
 
         metrics = [
             ("Avg Output", f"{avg_output:.2%}"),
@@ -346,20 +348,26 @@ if st.button("Generate Summary PDF"):
             ("Total KPIs", f"{total_kpis:,}")
         ]
 
-        col_width = 60
-        for i, (label, value) in enumerate(metrics):
-            if i % 3 == 0:
-                pdf.ln(12)
-            pdf.set_font("Arial", "B", 11)
-            pdf.cell(col_width, 7, encode_latin(label), border=1, fill=True, ln=0, align="C")
-        pdf.ln(7)
-        for i, (label, value) in enumerate(metrics):
-            if i % 3 == 0:
-                pdf.ln(7)
-            pdf.set_font("Arial", "", 11)
-            pdf.cell(col_width, 10, encode_latin(value), border=1, ln=0, align="C")
+        col_width = 90
+        row_height = 10
+        items_per_row = 3
 
-        # Footer timestamp
+        # Header row
+        for i, (label, _) in enumerate(metrics):
+            pdf.set_fill_color(240, 240, 240)
+            pdf.set_font("Arial", "B", 11)
+            pdf.cell(col_width, row_height, encode_latin(label), border=1, fill=True, align="C")
+            if (i + 1) % items_per_row == 0:
+                pdf.ln(row_height)
+
+        # Value row
+        for i, (_, value) in enumerate(metrics):
+            pdf.set_font("Arial", "", 11)
+            pdf.cell(col_width, row_height, encode_latin(value), border=1, align="C")
+            if (i + 1) % items_per_row == 0:
+                pdf.ln(row_height)
+
+        # Footer
         pdf.ln(15)
         pdf.set_font("Arial", "I", 8)
         pdf.cell(0, 10, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align="R")
