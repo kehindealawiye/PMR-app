@@ -242,10 +242,3 @@ TPR Score:
         with open(tmpfile.name, "rb") as f:
             st.download_button("Download PDF", f, file_name=f"PMR_Summary_{quarter}_{year}.pdf")
 
-# === Section: CSV Export ===
-st.subheader("Download Cleaned Data")
-
-@st.cache_data
-def convert_to_csv(df): return df.to_csv(index=False).encode("utf-8")
-csv = convert_to_csv(filtered_df)
-st.download_button("Download CSV", csv, f"pmr_cleaned_{quarter}_{year}.csv", "text/csv")
