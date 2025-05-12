@@ -105,24 +105,45 @@ df["TPR Status"] = df["TPR Score"].apply(tpr_category)
 # === Section: Dashboard Filters ===
 st.subheader("Filters")
 
-colf1, colf2, colf3 = st.columns(3)
+colf1, colf2, colf3, colf4 = st.columns(4)
 
+# TPR Status
 tpr_options = ["All"] + sorted(df["TPR Status"].dropna().unique().tolist())
 selected_tpr = colf1.selectbox("TPR Status", tpr_options)
 
-mda_options = ["All"] + sorted(df[mda_col].dropna().unique().tolist())
-selected_mda = colf2.selectbox("MDA", mda_options)
+# Sector
+sector_options = ["All"] + sorted(df["Sector"].dropna().unique().tolist())
+selected_sector = colf2.selectbox("Sector", sector_options)
 
-proj_options = ["All"] + sorted(df["Programme / Project"].dropna().unique().tolist())
-selected_proj = colf3.selectbox("Programme / Project", proj_options)
+# MDA (filtered by Sector)
+if selected_sector != "All":
+    mda_subset = df[df["Sector"] == selected_sector]
+else:
+    mda_subset = df
 
+mda_options = ["All"] + sorted(mda_subset[mda_col].dropna().unique().tolist())
+selected_mda = colf3.selectbox("MDA", mda_options)
+
+# Programme/Project (filtered by MDA)
+if selected_mda != "All":
+    proj_subset = mda_subset[mda_subset[mda_col] == selected_mda]
+else:
+    proj_subset = mda_subset
+
+proj_options = ["All"] + sorted(proj_subset["Programme / Project"].dropna().unique().tolist())
+selected_proj = colf4.selectbox("Programme / Project", proj_options)
+
+# Apply filters
 filtered_df = df.copy()
 if selected_tpr != "All":
     filtered_df = filtered_df[filtered_df["TPR Status"] == selected_tpr]
+if selected_sector != "All":
+    filtered_df = filtered_df[filtered_df["Sector"] == selected_sector]
 if selected_mda != "All":
     filtered_df = filtered_df[filtered_df[mda_col] == selected_mda]
 if selected_proj != "All":
     filtered_df = filtered_df[filtered_df["Programme / Project"] == selected_proj]
+    
     
 # === Section: Summary Cards ===
 avg_output = filtered_df[output_col].mean(skipna=True)
