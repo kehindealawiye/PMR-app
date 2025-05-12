@@ -246,13 +246,24 @@ st.markdown("Use the options below to generate a pivot table from the filtered d
 col1, col2 = st.columns(2)
 rows = col1.multiselect("Row(s)", df.columns.tolist())
 cols = col2.multiselect("Column(s)", df.columns.tolist())
-val = st.selectbox("Value", df.columns.tolist())
+val = st.multiselect("Value(s)", df.columns.tolist())
 aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
 
 if st.button("Generate Pivot Table"):
+    if filtered_df.empty:
+        st.warning("No data available based on current filters.")
+        st.stop()
+
+    if not val:
+        st.warning("Please select at least one value column.")
+        st.stop()
+
+    st.caption(f"Sample data from value columns after filtering:")
+    st.dataframe(filtered_df[val].dropna().head())
+
     try:
-        # Coerce value column in the filtered data
-        filtered_df[val] = pd.to_numeric(filtered_df[val], errors="coerce")
+        for v in val:
+            filtered_df[v] = pd.to_numeric(filtered_df[v], errors="coerce")
 
         pivot = pd.pivot_table(
             filtered_df,
@@ -262,15 +273,21 @@ if st.button("Generate Pivot Table"):
             aggfunc=aggfunc
         )
 
-        # Format display
-        if any(k in val for k in ["Performance", "TPR Score"]):
-            styled = pivot.style.format("{:.0%}")
-        elif any(k in val for k in ["Budget", "Approved", "Released"]):
-            styled = pivot.style.format("₦{:,.0f}")
+        if pivot.empty:
+            st.warning("Pivot table returned no results. Try different combinations.")
         else:
-            styled = pivot
+            if len(val) == 1:
+                col = val[0]
+                if any(k in col for k in ["Performance", "TPR Score"]):
+                    styled = pivot.style.format({col: "{:.0%}"})
+                elif any(k in col for k in ["Budget", "Approved", "Released"]):
+                    styled = pivot.style.format({col: "₦{:,.0f}"})
+                else:
+                    styled = pivot
+            else:
+                styled = pivot  # Skip styling when multiple values
 
-        st.dataframe(styled, use_container_width=True)
+            st.dataframe(styled, use_container_width=True)
 
     except Exception as e:
         st.error(f"Error generating pivot table: {str(e)}")
@@ -297,47 +314,49 @@ if st.button("Generate Summary PDF"):
         pdf.cell(0, 10, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), ln=True, align="C")
         pdf.ln(10)
 
-        # Section: Summary Metrics
+        # Summary Metrics
         pdf.set_font("Arial", "B", 13)
         pdf.cell(0, 10, encode_latin("Summary Metrics"), ln=True)
         pdf.set_font("Arial", "", 12)
 
-        pdf.cell(90, 10, encode_latin("Average Output Performance:"), border=0)
-        pdf.cell(0, 10, encode_latin(f"{avg_output:.2%}"), ln=True)
-
-        pdf.cell(90, 10, encode_latin("Average Budget Performance:"), border=0)
-        pdf.cell(0, 10, encode_latin(f"{avg_budget:.2%}"), ln=True)
-
-        pdf.cell(90, 10, encode_latin("Planned Output Performance:"), border=0)
-        pdf.cell(0, 10, encode_latin(f"{avg_planned:.0f}%"), ln=True)
-
-        pdf.cell(90, 10, encode_latin(f"Y{year} Approved Budget:"), border=0)
-        pdf.cell(0, 10, encode_latin(f"₦{total_approved:,.0f}"), ln=True)
-
-        pdf.cell(90, 10, encode_latin(f"Budget Released at {quarter}:"), border=0)
-        pdf.cell(0, 10, encode_latin(f"₦{total_released:,.0f}"), ln=True)
-
-        pdf.cell(90, 10, encode_latin("Total Projects:"), border=0)
-        pdf.cell(0, 10, encode_latin(f"{total_programmes:,}"), ln=True)
-
-        pdf.cell(90, 10, encode_latin("Total KPIs:"), border=0)
-        pdf.cell(0, 10, encode_latin(f"{total_kpis:,}"), ln=True)
+        metrics = [
+            ("Average Output Performance:", f"{avg_output:.2%}"),
+            ("Average Budget Performance:", f"{avg_budget:.2%}"),
+            ("Planned Output Performance:", f"{avg_planned:.0f}%"),
+            (f"Y{year} Approved Budget:", f"₦{total_approved:,.0f}"),
+            (f"Budget Released at {quarter}:", f"₦{total_released:,.0f}"),
+            ("Total Projects:", f"{total_programmes:,}"),
+            ("Total KPIs:", f"{total_kpis:,}")
+        ]
+        for label, value in metrics:
+            pdf.cell(90, 10, encode_latin(label), border=0)
+            pdf.cell(0, 10, encode_latin(value), ln=True)
 
         pdf.ln(10)
 
-        # Section: Drilldown Table Preview
-        preview_df = filtered_df[available_cols].head(15).copy()
+        # Drilldown Table Preview
         pdf.set_font("Arial", "B", 11)
         pdf.cell(0, 10, encode_latin("Drilldown Table (Top 15 Rows)"), ln=True)
 
+        preview_df = filtered_df[available_cols].head(15).copy()
         pdf.set_font("Arial", size=9)
+
         for _, row in preview_df.iterrows():
-            line = " | ".join(str(row[col]) for col in preview_df.columns)
+            values = []
+            for col in preview_df.columns:
+                val = row[col]
+                if isinstance(val, float) and ("Performance" in col or "TPR" in col):
+                    values.append(f"{val:.0%}")
+                elif isinstance(val, (int, float)) and "Budget" in col:
+                    values.append(f"₦{val:,.0f}")
+                else:
+                    values.append(str(val))
+            line = " | ".join(values)
             pdf.multi_cell(0, 8, encode_latin(line))
 
         pdf.ln(5)
 
-        # Section: Performance Legends
+        # Legends
         pdf.set_font("Arial", "B", 13)
         pdf.cell(0, 10, encode_latin("Performance Legends"), ln=True)
         pdf.set_font("Arial", size=11)
