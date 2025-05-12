@@ -5,8 +5,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import tempfile
-import streamlit.components.v1 as components
-from pivottablejs import pivot_ui
 import re
 from fpdf import FPDF
 
