@@ -238,21 +238,20 @@ styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_c
 st.caption(f"{len(filtered_df)} records matched your filters.")
 st.dataframe(styled_table, use_container_width=True)
 
-# === Section: Pivot Table Explorer ===
-st.subheader("Explore with Pivot Table")
+# === Section: Explore with Interactive Pivot Table ===
+st.subheader("Explore with Interactive Pivot Table")
 
-row = st.selectbox("Row", df.columns.tolist())
-col = st.selectbox("Column", df.columns.tolist())
-val = st.selectbox("Value", df.columns.tolist())
-aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
+import tempfile
+import streamlit.components.v1 as components
+from pivottablejs import pivot_ui
 
-if st.button("Generate Pivot Table"):
-    try:
-        pivot = pd.pivot_table(df, index=row, columns=col, values=val, aggfunc=aggfunc)
-        st.dataframe(pivot)
-    except Exception as e:
-        st.error(f"Error generating pivot: {str(e)}")
-
+with st.spinner("Rendering pivot table..."):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp:
+        pivot_ui(filtered_df, outfile_path=tmp.name)
+        with open(tmp.name, "r", encoding="utf-8") as f:
+            pivot_html = f.read()
+            components.html(pivot_html, height=600, scrolling=True)
+            
 # === Section: Export PDF Summary ===
 st.subheader("Export PDF Summary")
 
@@ -263,6 +262,11 @@ if st.button("Generate Summary PDF"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
         pdf = FPDF()
         pdf.add_page()
+
+        # Optional: MDA subheader
+        if selected_mda != "All":
+            pdf.set_font("Arial", "B", 12)
+            pdf.cell(0, 10, encode_latin(f"MDA: {selected_mda}"), ln=True)
 
         # Header
         pdf.set_font("Arial", "B", 16)
@@ -296,6 +300,18 @@ if st.button("Generate Summary PDF"):
         pdf.cell(0, 10, encode_latin(f"{total_kpis:,}"), ln=True)
 
         pdf.ln(10)
+
+        # Section: Drilldown Table Preview
+        preview_df = filtered_df[available_cols].head(15).copy()
+        pdf.set_font("Arial", "B", 11)
+        pdf.cell(0, 10, encode_latin("Drilldown Table (Top 15 Rows)"), ln=True)
+
+        pdf.set_font("Arial", size=9)
+        for _, row in preview_df.iterrows():
+            line = " | ".join(str(row[col]) for col in preview_df.columns)
+            pdf.multi_cell(0, 8, encode_latin(line))
+
+        pdf.ln(5)
 
         # Section: Performance Legends
         pdf.set_font("Arial", "B", 13)
