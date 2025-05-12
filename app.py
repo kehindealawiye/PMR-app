@@ -206,26 +206,52 @@ if st.button("Generate Pivot Table"):
     except Exception as e:
         st.error(f"Error generating pivot: {str(e)}")
 
-# === Section: PDF Export ===
 st.subheader("Export PDF Summary")
-def encode_latin(text): return text.encode("latin-1", "ignore").decode("latin-1")
+
+def encode_latin(text):
+    return text.encode("latin-1", "ignore").decode("latin-1")
 
 if st.button("Generate Summary PDF"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(200, 10, encode_latin("Performance Summary"), ln=True, align="C")
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, encode_latin(f"Avg {quarter} Output: {avg_output:.2%}"), ln=True)
-        pdf.cell(200, 10, encode_latin(f"Avg {quarter} Budget: {avg_budget:.2%}"), ln=True)
-        pdf.cell(200, 10, encode_latin(f"Planned Output: {avg_planned:.0f}%"), ln=True)
-        pdf.cell(200, 10, encode_latin(f"Y{year} Approved Budget: ₦{total_approved:,.0f}"), ln=True)
-        pdf.cell(200, 10, encode_latin(f"Budget Released at {quarter}: ₦{total_released:,.0f}"), ln=True)
-        pdf.cell(200, 10, encode_latin(f"Projects: {total_programmes:,} | KPIs: {total_kpis:,}"), ln=True)
+
+        # Header
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 10, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), ln=True, align="C")
         pdf.ln(10)
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(200, 10, encode_latin("Performance Legends"), ln=True)
+
+        # Section: Summary Metrics
+        pdf.set_font("Arial", "B", 13)
+        pdf.cell(0, 10, encode_latin("Summary Metrics"), ln=True)
+        pdf.set_font("Arial", "", 12)
+
+        pdf.cell(90, 10, encode_latin("Average Output Performance:"), border=0)
+        pdf.cell(0, 10, encode_latin(f"{avg_output:.2%}"), ln=True)
+
+        pdf.cell(90, 10, encode_latin("Average Budget Performance:"), border=0)
+        pdf.cell(0, 10, encode_latin(f"{avg_budget:.2%}"), ln=True)
+
+        pdf.cell(90, 10, encode_latin("Planned Output Performance:"), border=0)
+        pdf.cell(0, 10, encode_latin(f"{avg_planned:.0f}%"), ln=True)
+
+        pdf.cell(90, 10, encode_latin(f"Y{year} Approved Budget:"), border=0)
+        pdf.cell(0, 10, encode_latin(f"₦{total_approved:,.0f}"), ln=True)
+
+        pdf.cell(90, 10, encode_latin(f"Budget Released at {quarter}:"), border=0)
+        pdf.cell(0, 10, encode_latin(f"₦{total_released:,.0f}"), ln=True)
+
+        pdf.cell(90, 10, encode_latin("Total Projects:"), border=0)
+        pdf.cell(0, 10, encode_latin(f"{total_programmes:,}"), ln=True)
+
+        pdf.cell(90, 10, encode_latin("Total KPIs:"), border=0)
+        pdf.cell(0, 10, encode_latin(f"{total_kpis:,}"), ln=True)
+
+        pdf.ln(10)
+
+        # Section: Performance Legends
+        pdf.set_font("Arial", "B", 13)
+        pdf.cell(0, 10, encode_latin("Performance Legends"), ln=True)
         pdf.set_font("Arial", size=11)
         pdf.multi_cell(0, 8, encode_latin("""
 Output & Budget Performance:
@@ -238,7 +264,7 @@ TPR Score:
 • 🟨 At Risk: 60 - 79%
 • 🟥 Off Track: 0 - 59%
 """))
+
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
             st.download_button("Download PDF", f, file_name=f"PMR_Summary_{quarter}_{year}.pdf")
-
