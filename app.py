@@ -296,6 +296,8 @@ if st.button("Generate Pivot Table"):
 # === Section: Export PDF Summary ===
 st.subheader("Export PDF Summary")
 
+from datetime import datetime
+
 def encode_latin(text):
     return text.encode("latin-1", "ignore").decode("latin-1")
 
@@ -304,74 +306,57 @@ if st.button("Generate Summary PDF"):
         pdf = FPDF()
         pdf.add_page()
 
-        # Optional: MDA subheader
+        # Logo and centered header
+        try:
+            pdf.image("Lagos-logo.png", x=10, y=8, w=25)
+        except:
+            pass  # Prevent error if logo is missing
+
+        pdf.set_xy(40, 10)
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(0, 10, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), ln=True, align="C")
+        pdf.ln(15)
+
+        # MDA subheader (if any)
         if selected_mda != "All":
             pdf.set_font("Arial", "B", 12)
             pdf.cell(0, 10, encode_latin(f"MDA: {selected_mda}"), ln=True)
 
-        # Header
-        pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), ln=True, align="C")
-        pdf.ln(10)
-
-        # Summary Metrics
+        # Block-style metrics
         pdf.set_font("Arial", "B", 13)
         pdf.cell(0, 10, encode_latin("Summary Metrics"), ln=True)
-        pdf.set_font("Arial", "", 12)
+        pdf.set_fill_color(245, 245, 245)
+        pdf.set_draw_color(200, 200, 200)
 
         metrics = [
-            ("Average Output Performance:", f"{avg_output:.2%}"),
-            ("Average Budget Performance:", f"{avg_budget:.2%}"),
-            ("Planned Output Performance:", f"{avg_planned:.0f}%"),
-            (f"Y{year} Approved Budget:", f"₦{total_approved:,.0f}"),
-            (f"Budget Released at {quarter}:", f"₦{total_released:,.0f}"),
-            ("Total Projects:", f"{total_programmes:,}"),
-            ("Total KPIs:", f"{total_kpis:,}")
+            ("Avg Output", f"{avg_output:.2%}"),
+            ("Avg Budget", f"{avg_budget:.2%}"),
+            ("Planned Output", f"{avg_planned:.0f}%"),
+            (f"Y{year} Budget", f"₦{total_approved:,.0f}"),
+            (f"Released at {quarter}", f"₦{total_released:,.0f}"),
+            ("Projects", f"{total_programmes:,}"),
+            ("Total KPIs", f"{total_kpis:,}")
         ]
-        for label, value in metrics:
-            pdf.cell(90, 10, encode_latin(label), border=0)
-            pdf.cell(0, 10, encode_latin(value), ln=True)
 
-        pdf.ln(10)
+        col_width = 60
+        for i, (label, value) in enumerate(metrics):
+            if i % 3 == 0:
+                pdf.ln(12)
+            pdf.set_font("Arial", "B", 11)
+            pdf.cell(col_width, 7, encode_latin(label), border=1, fill=True, ln=0, align="C")
+        pdf.ln(7)
+        for i, (label, value) in enumerate(metrics):
+            if i % 3 == 0:
+                pdf.ln(7)
+            pdf.set_font("Arial", "", 11)
+            pdf.cell(col_width, 10, encode_latin(value), border=1, ln=0, align="C")
 
-        # Drilldown Table Preview
-        pdf.set_font("Arial", "B", 11)
-        pdf.cell(0, 10, encode_latin("Drilldown Table (Top 15 Rows)"), ln=True)
-
-        preview_df = filtered_df[available_cols].head(15).copy()
-        pdf.set_font("Arial", size=9)
-
-        for _, row in preview_df.iterrows():
-            values = []
-            for col in preview_df.columns:
-                val = row[col]
-                if isinstance(val, float) and ("Performance" in col or "TPR" in col):
-                    values.append(f"{val:.0%}")
-                elif isinstance(val, (int, float)) and "Budget" in col:
-                    values.append(f"₦{val:,.0f}")
-                else:
-                    values.append(str(val))
-            line = " | ".join(values)
-            pdf.multi_cell(0, 8, encode_latin(line))
-
-        pdf.ln(5)
-
-        # Legends
-        pdf.set_font("Arial", "B", 13)
-        pdf.cell(0, 10, encode_latin("Performance Legends"), ln=True)
-        pdf.set_font("Arial", size=11)
-        pdf.multi_cell(0, 8, encode_latin("""
-Output & Budget Performance:
-• 🟩 Green: >=70%
-• 🟨 Amber: 50 - 69%
-• 🟥 Red: 0 - 49%
-
-TPR Score:
-• 🟩 On Track: >=80%
-• 🟨 At Risk: 60 - 79%
-• 🟥 Off Track: 0 - 59%
-"""))
+        # Footer timestamp
+        pdf.ln(15)
+        pdf.set_font("Arial", "I", 8)
+        pdf.cell(0, 10, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align="R")
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
             st.download_button("Download PDF", f, file_name=f"PMR_Summary_{quarter}_{year}.pdf")
+            
