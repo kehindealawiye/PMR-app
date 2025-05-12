@@ -256,7 +256,7 @@ if st.button("Generate Pivot Table"):
         st.warning("Please select at least one value column.")
         st.stop()
 
-    # Ensure value columns have at least some usable data
+    # Ensure value columns have usable data
     if all(filtered_df[v].dropna().empty for v in val):
         st.warning("No usable data found in selected value columns after filtering.")
         st.stop()
@@ -265,15 +265,21 @@ if st.button("Generate Pivot Table"):
         for v in val:
             filtered_df[v] = pd.to_numeric(filtered_df[v], errors="coerce")
 
+        # Debug preview
+        preview_cols = list(set((rows or []) + (cols or []) + val))
+        st.caption("Preview of data before pivot:")
+        st.dataframe(filtered_df[preview_cols].dropna().head())
+
         pivot = pd.pivot_table(
             filtered_df,
             index=rows if rows else None,
             columns=cols if cols else None,
             values=val,
-            aggfunc=aggfunc
+            aggfunc=aggfunc,
+            margins=False,
+            dropna=False  # Show all combinations even if result is NaN
         )
 
-        # Confirm pivot is not truly empty
         if pivot.shape[0] == 0 or pivot.shape[1] == 0:
             st.warning("Pivot table returned no rows or columns.")
             st.stop()
