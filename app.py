@@ -177,11 +177,11 @@ def style_drilldown(df, output_col, budget_col, approved_col, released_col, plan
         .applymap(highlight_tpr, subset=[tpr_score_col])\
         .format({
             output_col: "{:.0%}",
-            budget_col: "{:.0%}",
             planned_col: "{:.0f}%",
             tpr_score_col: "{:.0%}",
             approved_col: "₦{:,.0f}",
             released_col: "₦{:,.0f}",
+            budget_col: "{:.0%}",
         })
 
     return styled
