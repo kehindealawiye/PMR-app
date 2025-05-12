@@ -105,19 +105,25 @@ df["TPR Status"] = df["TPR Score"].apply(tpr_category)
 # === Section: Dashboard Filters ===
 st.subheader("Filters")
 
-colf1, colf2 = st.columns(2)
+colf1, colf2, colf3 = st.columns(3)
+
 tpr_options = ["All"] + sorted(df["TPR Status"].dropna().unique().tolist())
 selected_tpr = colf1.selectbox("TPR Status", tpr_options)
 
 mda_options = ["All"] + sorted(df[mda_col].dropna().unique().tolist())
 selected_mda = colf2.selectbox("MDA", mda_options)
 
+proj_options = ["All"] + sorted(df["Programme / Project"].dropna().unique().tolist())
+selected_proj = colf3.selectbox("Programme / Project", proj_options)
+
 filtered_df = df.copy()
 if selected_tpr != "All":
     filtered_df = filtered_df[filtered_df["TPR Status"] == selected_tpr]
 if selected_mda != "All":
     filtered_df = filtered_df[filtered_df[mda_col] == selected_mda]
-
+if selected_proj != "All":
+    filtered_df = filtered_df[filtered_df["Programme / Project"] == selected_proj]
+    
 # === Section: Summary Cards ===
 avg_output = filtered_df[output_col].mean(skipna=True)
 avg_budget = filtered_df[budget_col].mean(skipna=True)
