@@ -13,25 +13,44 @@ st.title("📊 Performance Management Report Dashboard")
 
 # === Section: File Upload and Setup ===
 st.sidebar.header("🗂️ Report Settings")
-source_option = st.sidebar.radio("Choose data source:", ["Upload Excel File", "Enter Google Sheets Link"])
-uploaded_file = st.sidebar.file_uploader("Upload Excel (.xlsx)", type=["xlsx"])
-sheet_link = st.sidebar.text_input("Or paste Google Sheets link")
+
+source_option = st.sidebar.radio(
+    "Choose data source:",
+    ["Use GitHub default", "Upload Excel File", "Enter Google Sheets Link"]
+)
 
 df = None
-if source_option == "Upload Excel File" and uploaded_file:
-    df = pd.read_excel(uploaded_file, sheet_name="PMR")
-elif source_option == "Enter Google Sheets Link" and sheet_link:
+
+if source_option == "Use GitHub default":
     try:
-        sheet_id = sheet_link.split("/d/")[1].split("/")[0]
-        url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&sheet=PMR"
-        df = pd.read_csv(url)
+        github_url = "https://raw.githubusercontent.com/yourusername/yourrepo/main/Y2024_PMR.xlsx"
+        df = pd.read_excel(github_url, sheet_name="PMR")
+        st.sidebar.success("Loaded default file from GitHub.")
     except Exception as e:
-        st.error(f"Error loading sheet: {e}")
+        st.sidebar.error(f"Failed to load default sheet: {e}")
         st.stop()
 
-if df is None:
-    st.warning("Upload a file or paste a valid link to proceed.")
-    st.stop()
+elif source_option == "Upload Excel File":
+    uploaded_file = st.sidebar.file_uploader("Upload Excel (.xlsx)", type=["xlsx"])
+    if uploaded_file:
+        df = pd.read_excel(uploaded_file, sheet_name="PMR")
+    else:
+        st.warning("Please upload a file to continue.")
+        st.stop()
+
+elif source_option == "Enter Google Sheets Link":
+    sheet_link = st.sidebar.text_input("Paste your Google Sheets link")
+    if sheet_link:
+        try:
+            sheet_id = sheet_link.split("/d/")[1].split("/")[0]
+            url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&sheet=PMR"
+            df = pd.read_csv(url)
+        except Exception as e:
+            st.error(f"Error loading sheet: {e}")
+            st.stop()
+    else:
+        st.warning("Please paste a link to continue.")
+        st.stop()
 
 # === Section: Detect Quarter and Year ===
 df.columns = [col.strip() for col in df.columns]
