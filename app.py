@@ -5,6 +5,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import tempfile
+import streamlit.components.v1 as components
+from pivottablejs import pivot_ui
 import re
 from fpdf import FPDF
 
@@ -192,19 +194,14 @@ styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_c
 st.dataframe(styled_table, use_container_width=True)
 
 
-# === Section: Pivot Table Explorer ===
-st.subheader("Explore with Pivot Table")
-row = st.selectbox("Row", df.columns.tolist())
-col = st.selectbox("Column", df.columns.tolist())
-val = st.selectbox("Value", df.columns.tolist())
-aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
-
-if st.button("Generate Pivot Table"):
-    try:
-        pivot = pd.pivot_table(df, index=row, columns=col, values=val, aggfunc=aggfunc)
-        st.dataframe(pivot)
-    except Exception as e:
-        st.error(f"Error generating pivot: {str(e)}")
+# === Section: Explore with Interactive Pivot Table ===
+st.subheader("Explore with Interactive Pivot Table")
+with st.spinner("Rendering pivot table..."):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp:
+        pivot_ui(filtered_df, outfile_path=tmp.name)
+        with open(tmp.name, "r", encoding="utf-8") as f:
+            pivot_html = f.read()
+            components.html(pivot_html, height=600, scrolling=True)
 
 st.subheader("Export PDF Summary")
 
