@@ -193,16 +193,22 @@ available_cols = [col for col in drill_cols if col in filtered_df.columns]
 styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col)
 st.dataframe(styled_table, use_container_width=True)
 
+# === Section: Pivot Table Explorer ===
+st.subheader("Explore with Pivot Table")
 
-# === Section: Explore with Interactive Pivot Table ===
-st.subheader("Explore with Interactive Pivot Table")
-with st.spinner("Rendering pivot table..."):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp:
-        pivot_ui(filtered_df, outfile_path=tmp.name)
-        with open(tmp.name, "r", encoding="utf-8") as f:
-            pivot_html = f.read()
-            components.html(pivot_html, height=600, scrolling=True)
+row = st.selectbox("Row", df.columns.tolist())
+col = st.selectbox("Column", df.columns.tolist())
+val = st.selectbox("Value", df.columns.tolist())
+aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
 
+if st.button("Generate Pivot Table"):
+    try:
+        pivot = pd.pivot_table(df, index=row, columns=col, values=val, aggfunc=aggfunc)
+        st.dataframe(pivot)
+    except Exception as e:
+        st.error(f"Error generating pivot: {str(e)}")
+
+# === Section: Export PDF Summary ===
 st.subheader("Export PDF Summary")
 
 def encode_latin(text):
