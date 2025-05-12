@@ -238,20 +238,43 @@ styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_c
 st.caption(f"{len(filtered_df)} records matched your filters.")
 st.dataframe(styled_table, use_container_width=True)
 
-# === Section: Explore with Interactive Pivot Table ===
-st.subheader("Explore with Interactive Pivot Table")
+# === Section: Pivot Table Explorer ===
+st.subheader("Explore with Pivot Table")
 
-import tempfile
-import streamlit.components.v1 as components
-from pivottablejs import pivot_ui
+st.markdown("Use the options below to generate a pivot table from the filtered data.")
 
-with st.spinner("Rendering pivot table..."):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp:
-        pivot_ui(filtered_df, outfile_path=tmp.name)
-        with open(tmp.name, "r", encoding="utf-8") as f:
-            pivot_html = f.read()
-            components.html(pivot_html, height=600, scrolling=True)
-            
+col1, col2 = st.columns(2)
+rows = col1.multiselect("Row(s)", df.columns.tolist())
+cols = col2.multiselect("Column(s)", df.columns.tolist())
+val = st.selectbox("Value", df.columns.tolist())
+aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
+
+if st.button("Generate Pivot Table"):
+    try:
+        df[val] = pd.to_numeric(df[val], errors="coerce")
+
+        pivot = pd.pivot_table(
+            filtered_df,
+            index=rows if rows else None,
+            columns=cols if cols else None,
+            values=val,
+            aggfunc=aggfunc
+        )
+
+        # Format results
+        if any(k in val for k in ["Performance", "TPR Score"]):
+            styled = pivot.style.format("{:.0%}")
+        elif "Budget" in val or "Approved" in val or "Released" in val:
+            styled = pivot.style.format("₦{:,.0f}")
+        else:
+            styled = pivot
+
+        st.dataframe(styled, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Error generating pivot table: {str(e)}")
+        
+
 # === Section: Export PDF Summary ===
 st.subheader("Export PDF Summary")
 
