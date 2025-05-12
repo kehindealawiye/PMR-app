@@ -235,6 +235,7 @@ def style_drilldown(df, output_col, budget_col, approved_col, released_col, plan
 # Ensure columns exist before applying
 available_cols = [col for col in drill_cols if col in filtered_df.columns]
 styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col)
+st.caption(f"{len(filtered_df)} records matched your filters.")
 st.dataframe(styled_table, use_container_width=True)
 
 # === Section: Pivot Table Explorer ===
