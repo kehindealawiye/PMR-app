@@ -24,7 +24,7 @@ df = None
 if source_option == "Use GitHub default":
     try:
         github_url = "https://github.com/kehindealawiye/PMR-app/blob/3557f4a19cc4fe2f7f299ffe1fa5a64462fc9660/Y2024%20PMR%20dummy%20DOWNLOADED%20REPORT%20%20(1).xlsx"
-        df = pd.read_excel(github_url, sheet_name="PMR")
+        df = pd.read_excel(github_url, sheet_name="PMR", engine="openpyxl")
         st.sidebar.success("Loaded default file from GitHub.")
     except Exception as e:
         st.sidebar.error(f"Failed to load default sheet: {e}")
