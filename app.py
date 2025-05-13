@@ -311,7 +311,7 @@ if st.button("Generate Pivot Table"):
         st.error(f"Error generating pivot table: {str(e)}")
         
 
-# === Section: Export PDF Summary (Optimized Layout, No Shadows) ===
+# === Section: Export PDF Summary (One-Page Clean Layout) ===
 st.subheader("Export PDF Summary")
 
 from datetime import datetime
@@ -336,19 +336,19 @@ if st.button("Download PDF Summary"):
         pdf.set_xy(40, 10)
         pdf.set_font("Arial", "B", 14)
         pdf.multi_cell(0, 8, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), align="C")
+        pdf.ln(18)  # Add space before Sector/MDA
 
-        # Sector and MDA left-aligned
+        # Sector and MDA (pushed lower to clear logo)
         pdf.set_font("Arial", "B", 11)
-        pdf.ln(5)
         if selected_sector != "All":
             pdf.set_x(20)
             pdf.cell(0, 6, encode_latin(f"Sector: {selected_sector}"), ln=True)
         if selected_mda != "All":
             pdf.set_x(20)
             pdf.cell(0, 6, encode_latin(f"MDA: {selected_mda}"), ln=True)
-        pdf.ln(4)
+        pdf.ln(5)
 
-        # KPI cards
+        # KPI cards setup
         kpi_blocks = [
             ("output.png", "Average output performance", f"{avg_output:.2%}", (210, 230, 255)),
             ("budget.png", "Average budget performance", f"{avg_budget:.2%}", (220, 255, 220)),
@@ -360,7 +360,7 @@ if st.button("Download PDF Summary"):
 
         block_width = 90
         spacing = 10
-        icon_size = 12  # reduced for tighter layout
+        icon_size = 12
         block_height = 9
         margin_left = (pdf.w - (3 * block_width + 2 * spacing)) / 2
 
@@ -390,8 +390,8 @@ if st.button("Download PDF Summary"):
             x = margin_left + (i - 3) * (block_width + spacing)
             draw_kpi_card(x, y_bottom, *kpi_blocks[i])
 
-        # Footer
-        pdf.set_y(190)
+        # Footer (moved up slightly to prevent page overflow)
+        pdf.set_y(185)
         pdf.set_font("Arial", "I", 8)
         pdf.cell(0, 10, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align="R")
 
