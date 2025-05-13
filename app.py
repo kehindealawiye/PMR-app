@@ -316,6 +316,16 @@ if st.button("Generate Pivot Table"):
 # === Section: Export PDF Summary (Filtered View) ===
 st.subheader("Export PDF Summary")
 
+class PDF(FPDF):
+    def header(self):
+        try:
+            self.image("Lagos-logo.png", x=10, y=8, w=25)
+        except:
+            pass
+
+def encode_latin(text):
+    return text.encode("latin-1", "ignore").decode("latin-1")
+
 if st.button("Download PDF Summary"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
         pdf = PDF(orientation="L")
