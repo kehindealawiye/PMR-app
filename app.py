@@ -478,7 +478,7 @@ if st.button("Download All MDAs in Selected Sector as PDF"):
                 ("kpi.png", "Total number of KPIs", f"{total_kpis:,}", (240, 240, 240))
             ]
 
-            y_top = pdf.get_y() + 25  # consistent offset
+            y_top = pdf.get_y() + 10  # consistent offset
             for i in range(3):
                 x = margin_left + i * (block_width + spacing)
                 draw_kpi_card(x, y_top, *kpi_blocks[i])
