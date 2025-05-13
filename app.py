@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import tempfile
+from datetime import datetime
 import re
 import os
 import zipfile
@@ -401,6 +402,29 @@ selected_sector_for_mda = st.selectbox("Select Sector for full MDA PDF", df["Sec
 if st.button("Download All MDAs in Selected Sector as PDF"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
         pdf = PDF(orientation="L")
+
+        # Define layout values
+        block_width = 90
+        spacing = 10
+        icon_size = 12
+        block_height = 9
+        margin_left = (pdf.w - (3 * block_width + 2 * spacing)) / 2
+
+        def draw_kpi_card(x, y, icon, label, value, bg_color):
+            try:
+                pdf.image(icon, x + block_width / 2 - icon_size / 2, y, w=icon_size)
+            except:
+                pass
+            y += icon_size + 1
+            pdf.set_xy(x, y)
+            pdf.set_fill_color(*bg_color)
+            pdf.set_draw_color(200, 200, 200)
+            pdf.set_font("Arial", "B", 9)
+            pdf.multi_cell(block_width, block_height, encode_latin(label), border=1, align="C", fill=True)
+            y += block_height
+            pdf.set_xy(x, y)
+            pdf.set_font("Arial", "", 11)
+            pdf.multi_cell(block_width, block_height + 1, encode_latin(value), border=1, align="C", fill=True)
 
         mda_list = df[df["Sector"] == selected_sector_for_mda]["MDA REVISED"].dropna().unique()
         for mda_name in mda_list:
