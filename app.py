@@ -311,7 +311,7 @@ if st.button("Generate Pivot Table"):
         st.error(f"Error generating pivot table: {str(e)}")
         
 
-# === # === Section: Export PDF Summary with Icons and Shadows ===
+# === Section: Export PDF Summary with Icons and Themed KPI Cards ===
 st.subheader("Export PDF Summary")
 
 from datetime import datetime
@@ -338,7 +338,7 @@ if st.button("Download PDF Summary"):
         pdf.multi_cell(0, 10, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), align="C")
         pdf.ln(25)
 
-        # Sector and MDA
+        # Sector and MDA (left aligned)
         pdf.set_font("Arial", "B", 12)
         if selected_sector != "All":
             pdf.set_x(20)
@@ -348,14 +348,14 @@ if st.button("Download PDF Summary"):
             pdf.multi_cell(0, 8, encode_latin(f"MDA: {selected_mda}"))
         pdf.ln(5)
 
-        # KPI definitions with icon and color
+        # KPI blocks with themed colors
         kpi_blocks = [
-            ("output.png", "Average output performance", f"{avg_output:.2%}", (210, 230, 255)),
-            ("budget.png", "Average budget performance", f"{avg_budget:.2%}", (220, 255, 220)),
-            ("approved.png", "Total budget approved", f"₦{total_approved:,.0f}", (255, 255, 210)),
-            ("released.png", "Total budget released", f"₦{total_released:,.0f}", (255, 230, 200)),
-            ("projects.png", "Total number of programmes/projects", f"{total_programmes:,}", (235, 230, 255)),
-            ("kpi.png", "Total number of KPIs", f"{total_kpis:,}", (240, 240, 240))
+            ("output.png", "Average output performance", f"{avg_output:.2%}", (210, 230, 255)),  # Blue
+            ("budget.png", "Average budget performance", f"{avg_budget:.2%}", (220, 255, 220)),  # Green
+            ("approved.png", "Total budget approved", f"₦{total_approved:,.0f}", (255, 255, 210)),  # Yellow
+            ("released.png", "Total budget released", f"₦{total_released:,.0f}", (255, 230, 200)),  # Orange
+            ("projects.png", "Total number of programmes/projects", f"{total_programmes:,}", (235, 230, 255)),  # Lavender
+            ("kpi.png", "Total number of KPIs", f"{total_kpis:,}", (240, 240, 240))  # Light gray
         ]
 
         block_width = 90
@@ -364,28 +364,18 @@ if st.button("Download PDF Summary"):
         block_height = 10
         margin_left = (pdf.w - (3 * block_width + 2 * spacing)) / 2
 
-        def draw_kpi_block_with_shadow(x, y, icon, label, value, bg_color):
-            # Shadow rectangle (behind the block)
-            shadow_offset = 2
-            pdf.set_fill_color(200, 200, 200)
-            pdf.rect(x + shadow_offset, y + shadow_offset, block_width, icon_size + block_height * 2 + 5, style='F')
-
-            # Icon
+        def draw_kpi_block_with_theme(x, y, icon, label, value, bg_color):
             try:
                 pdf.image(icon, x + block_width / 2 - icon_size / 2, y, w=icon_size)
             except:
                 pass
-
             y += icon_size + 2
-
-            # Label with background color
             pdf.set_xy(x, y)
             pdf.set_fill_color(*bg_color)
             pdf.set_draw_color(200, 200, 200)
+            pdf.set_text_color(0)
             pdf.set_font("Arial", "B", 10)
             pdf.multi_cell(block_width, block_height, encode_latin(label), border=1, align="C", fill=True)
-
-            # Value
             y += block_height
             pdf.set_xy(x, y)
             pdf.set_fill_color(255, 255, 255)
@@ -395,14 +385,16 @@ if st.button("Download PDF Summary"):
         y_top = pdf.get_y() + 10
         for i in range(3):
             x = margin_left + i * (block_width + spacing)
-            draw_kpi_block_with_shadow(x, y_top, *kpi_blocks[i])
+            icon, label, value, color = kpi_blocks[i]
+            draw_kpi_block_with_theme(x, y_top, icon, label, value, color)
 
         y_bottom = y_top + (icon_size + block_height * 2 + 12)
         for i in range(3, 6):
             x = margin_left + (i - 3) * (block_width + spacing)
-            draw_kpi_block_with_shadow(x, y_bottom, *kpi_blocks[i])
+            icon, label, value, color = kpi_blocks[i]
+            draw_kpi_block_with_theme(x, y_bottom, icon, label, value, color)
 
-        # Footer
+        # Footer timestamp
         pdf.ln(25)
         pdf.set_font("Arial", "I", 8)
         pdf.cell(0, 10, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align="R")
@@ -410,3 +402,4 @@ if st.button("Download PDF Summary"):
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
             st.download_button("Download PDF", f, file_name=f"PMR_Summary_{quarter}_{year}.pdf")
+            
