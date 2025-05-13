@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 import tempfile
 import re
 from fpdf import FPDF
+import os
+import zipfile
 
 st.set_page_config(page_title="PMR Dashboard", layout="wide")
 st.title("📊 Performance Management Report Dashboard")
@@ -311,7 +313,7 @@ if st.button("Generate Pivot Table"):
         st.error(f"Error generating pivot table: {str(e)}")
         
 
-# === # === Section: Export PDF Summary (Filtered View) ===
+# === Section: Export PDF Summary (Filtered View) ===
 st.subheader("Export PDF Summary")
 
 if st.button("Download PDF Summary"):
@@ -382,3 +384,5 @@ if st.button("Download PDF Summary"):
         with open(tmpfile.name, "rb") as f:
             st.download_button("Download PDF", f, file_name=f"PMR_Summary_{quarter}_{year}.pdf")
 
+
+            
