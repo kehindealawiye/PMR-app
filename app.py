@@ -201,7 +201,7 @@ drill_cols = [
     output_col,
     planned_col,
     tpr_score_col,
-    "TPR Status"
+    "TPR Status",
     approved_col,
     released_col,
     budget_col, 
