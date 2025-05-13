@@ -6,9 +6,20 @@ import plotly.express as px
 import plotly.graph_objects as go
 import tempfile
 import re
-from fpdf import FPDF
 import os
 import zipfile
+from fpdf import FPDF
+
+class PDF(FPDF):
+    def header(self):
+        try:
+            self.image("Lagos-logo.png", x=10, y=8, w=25)
+        except:
+            pass
+
+def encode_latin(text):
+    return text.encode("latin-1", "ignore").decode("latin-1")
+    
 
 st.set_page_config(page_title="PMR Dashboard", layout="wide")
 st.title("📊 Performance Management Report Dashboard")
