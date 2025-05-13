@@ -403,7 +403,7 @@ if st.button("Download PDF Summary"):
             pdf.set_x(12)
             pdf.cell(0, 6, encode_latin(f"MDA: {selected_mda}"), ln=True)
 
-        pdf.ln(20)  # Add some space before KPI cards
+        pdf.ln(25)  # Add some space before KPI cards
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
@@ -466,7 +466,7 @@ if st.button("Download All MDAs in Selected Sector as PDF"):
             pdf.cell(0, 6, encode_latin(f"Sector: {selected_sector_for_mda}"), ln=True)
             pdf.set_x(12)
             pdf.cell(0, 6, encode_latin(f"MDA: {mda_name}"), ln=True)
-            pdf.ln(20)  # space before cards
+            pdf.ln(10)  # space before cards
 
             # KPI blocks
             kpi_blocks = [
