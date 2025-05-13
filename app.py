@@ -204,7 +204,8 @@ drill_cols = [
     "TPR Status",
     approved_col,
     released_col,
-    budget_col, 
+    budget_col,
+    "Remarks"
 ]
 
 # Insert Sector and MDA Revised at the top if present
