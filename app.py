@@ -311,7 +311,7 @@ if st.button("Generate Pivot Table"):
         st.error(f"Error generating pivot table: {str(e)}")
         
 
-# === Section: Export PDF Summary with Icons and Themed KPI Cards ===
+# === Section: Export PDF Summary (Optimized Layout, No Shadows) ===
 st.subheader("Export PDF Summary")
 
 from datetime import datetime
@@ -335,67 +335,63 @@ if st.button("Download PDF Summary"):
         # Title
         pdf.set_xy(40, 10)
         pdf.set_font("Arial", "B", 14)
-        pdf.multi_cell(0, 10, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), align="C")
-        pdf.ln(25)
+        pdf.multi_cell(0, 8, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), align="C")
 
-        # Sector and MDA (left aligned)
-        pdf.set_font("Arial", "B", 12)
+        # Sector and MDA left-aligned
+        pdf.set_font("Arial", "B", 11)
+        pdf.ln(5)
         if selected_sector != "All":
             pdf.set_x(20)
-            pdf.multi_cell(0, 8, encode_latin(f"Sector: {selected_sector}"))
+            pdf.cell(0, 6, encode_latin(f"Sector: {selected_sector}"), ln=True)
         if selected_mda != "All":
             pdf.set_x(20)
-            pdf.multi_cell(0, 8, encode_latin(f"MDA: {selected_mda}"))
-        pdf.ln(5)
+            pdf.cell(0, 6, encode_latin(f"MDA: {selected_mda}"), ln=True)
+        pdf.ln(4)
 
-        # KPI blocks with themed colors
+        # KPI cards
         kpi_blocks = [
-            ("output.png", "Average output performance", f"{avg_output:.2%}", (210, 230, 255)),  # Blue
-            ("budget.png", "Average budget performance", f"{avg_budget:.2%}", (220, 255, 220)),  # Green
-            ("approved.png", "Total budget approved", f"₦{total_approved:,.0f}", (255, 255, 210)),  # Yellow
-            ("released.png", "Total budget released", f"₦{total_released:,.0f}", (255, 230, 200)),  # Orange
-            ("projects.png", "Total number of programmes/projects", f"{total_programmes:,}", (235, 230, 255)),  # Lavender
-            ("kpi.png", "Total number of KPIs", f"{total_kpis:,}", (240, 240, 240))  # Light gray
+            ("output.png", "Average output performance", f"{avg_output:.2%}", (210, 230, 255)),
+            ("budget.png", "Average budget performance", f"{avg_budget:.2%}", (220, 255, 220)),
+            ("approved.png", "Total budget approved", f"₦{total_approved:,.0f}", (255, 255, 210)),
+            ("released.png", "Total budget released", f"₦{total_released:,.0f}", (255, 230, 200)),
+            ("projects.png", "Total number of programmes/projects", f"{total_programmes:,}", (235, 230, 255)),
+            ("kpi.png", "Total number of KPIs", f"{total_kpis:,}", (240, 240, 240))
         ]
 
         block_width = 90
         spacing = 10
-        icon_size = 14
-        block_height = 10
+        icon_size = 12  # reduced for tighter layout
+        block_height = 9
         margin_left = (pdf.w - (3 * block_width + 2 * spacing)) / 2
 
-        def draw_kpi_block_with_theme(x, y, icon, label, value, bg_color):
+        def draw_kpi_card(x, y, icon, label, value, bg_color):
             try:
                 pdf.image(icon, x + block_width / 2 - icon_size / 2, y, w=icon_size)
             except:
                 pass
-            y += icon_size + 2
+            y += icon_size + 1
             pdf.set_xy(x, y)
             pdf.set_fill_color(*bg_color)
             pdf.set_draw_color(200, 200, 200)
-            pdf.set_text_color(0)
-            pdf.set_font("Arial", "B", 10)
+            pdf.set_font("Arial", "B", 9)
             pdf.multi_cell(block_width, block_height, encode_latin(label), border=1, align="C", fill=True)
             y += block_height
             pdf.set_xy(x, y)
-            pdf.set_fill_color(255, 255, 255)
-            pdf.set_font("Arial", "", 12)
-            pdf.multi_cell(block_width, block_height + 2, encode_latin(value), border=1, align="C", fill=True)
+            pdf.set_font("Arial", "", 11)
+            pdf.multi_cell(block_width, block_height + 1, encode_latin(value), border=1, align="C", fill=True)
 
-        y_top = pdf.get_y() + 10
+        y_top = pdf.get_y() + 5
         for i in range(3):
             x = margin_left + i * (block_width + spacing)
-            icon, label, value, color = kpi_blocks[i]
-            draw_kpi_block_with_theme(x, y_top, icon, label, value, color)
+            draw_kpi_card(x, y_top, *kpi_blocks[i])
 
-        y_bottom = y_top + (icon_size + block_height * 2 + 12)
+        y_bottom = y_top + (icon_size + block_height * 2 + 8)
         for i in range(3, 6):
             x = margin_left + (i - 3) * (block_width + spacing)
-            icon, label, value, color = kpi_blocks[i]
-            draw_kpi_block_with_theme(x, y_bottom, icon, label, value, color)
+            draw_kpi_card(x, y_bottom, *kpi_blocks[i])
 
-        # Footer timestamp
-        pdf.ln(25)
+        # Footer
+        pdf.set_y(190)
         pdf.set_font("Arial", "I", 8)
         pdf.cell(0, 10, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align="R")
 
