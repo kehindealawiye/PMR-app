@@ -384,7 +384,7 @@ if st.button("Download PDF Summary"):
             pdf.set_font("Arial", "", 11)
             pdf.multi_cell(block_width, block_height + 1, encode_latin(value), border=1, align="C", fill=True)
 
-        y_top = pdf.get_y() + 5
+        y_top = pdf.get_y() + 17
         for i in range(3):
             x = margin_left + i * (block_width + spacing)
             draw_kpi_card(x, y_top, *kpi_blocks[i])
