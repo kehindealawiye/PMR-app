@@ -311,21 +311,8 @@ if st.button("Generate Pivot Table"):
         st.error(f"Error generating pivot table: {str(e)}")
         
 
-# === Section: Export PDF Summary (One-Page Clean Layout) ===
+# === # === Section: Export PDF Summary (Filtered View) ===
 st.subheader("Export PDF Summary")
-
-from datetime import datetime
-from fpdf import FPDF
-
-class PDF(FPDF):
-    def header(self):
-        try:
-            self.image("Lagos-logo.png", x=10, y=8, w=25)
-        except:
-            pass
-
-def encode_latin(text):
-    return text.encode("latin-1", "ignore").decode("latin-1")
 
 if st.button("Download PDF Summary"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
@@ -336,19 +323,9 @@ if st.button("Download PDF Summary"):
         pdf.set_xy(40, 10)
         pdf.set_font("Arial", "B", 14)
         pdf.multi_cell(0, 8, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), align="C")
-        pdf.ln(18)  # Add space before Sector/MDA
+        pdf.ln(10)
 
-        # Sector and MDA (pushed lower to clear logo)
-        pdf.set_font("Arial", "B", 11)
-        if selected_sector != "All":
-            pdf.set_x(20)
-            pdf.cell(0, 6, encode_latin(f"Sector: {selected_sector}"), ln=True)
-        if selected_mda != "All":
-            pdf.set_x(20)
-            pdf.cell(0, 6, encode_latin(f"MDA: {selected_mda}"), ln=True)
-        pdf.ln(5)
-
-        # KPI cards setup
+        # KPI blocks
         kpi_blocks = [
             ("output.png", "Average output performance", f"{avg_output:.2%}", (210, 230, 255)),
             ("budget.png", "Average budget performance", f"{avg_budget:.2%}", (220, 255, 220)),
@@ -390,12 +367,18 @@ if st.button("Download PDF Summary"):
             x = margin_left + (i - 3) * (block_width + spacing)
             draw_kpi_card(x, y_bottom, *kpi_blocks[i])
 
-        # Footer (moved up slightly to prevent page overflow)
-        pdf.set_y(185)
+        # Footer section
+        pdf.set_y(178)
+        pdf.set_font("Arial", "B", 10)
+        if selected_sector != "All":
+            pdf.cell(0, 10, encode_latin(f"Sector: {selected_sector}"), ln=True)
+        if selected_mda != "All":
+            pdf.cell(0, 10, encode_latin(f"MDA: {selected_mda}"), ln=True)
+
         pdf.set_font("Arial", "I", 8)
         pdf.cell(0, 10, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align="R")
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
             st.download_button("Download PDF", f, file_name=f"PMR_Summary_{quarter}_{year}.pdf")
-            
+
