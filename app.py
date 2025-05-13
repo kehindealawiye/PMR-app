@@ -325,21 +325,34 @@ if st.button("Generate Pivot Table"):
         st.error(f"Error generating pivot table: {str(e)}")
         
 
-# === Section: Export PDF Summary (Filtered View) ===
+# === Section: Export PDF Summary (Sector/MDA below, Footer adjusted) ===
 st.subheader("Export PDF Summary")
+
+from datetime import datetime
+from fpdf import FPDF
+
+class PDF(FPDF):
+    def header(self):
+        try:
+            self.image("Lagos-logo.png", x=10, y=8, w=25)
+        except:
+            pass
+
+def encode_latin(text):
+    return text.encode("latin-1", "ignore").decode("latin-1")
 
 if st.button("Download PDF Summary"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
         pdf = PDF(orientation="L")
         pdf.add_page()
 
-        # Title
+        # Title (centered)
         pdf.set_xy(40, 10)
         pdf.set_font("Arial", "B", 14)
         pdf.multi_cell(0, 8, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), align="C")
         pdf.ln(10)
 
-        # KPI blocks
+        # KPI card setup
         kpi_blocks = [
             ("output.png", "Average output performance", f"{avg_output:.2%}", (210, 230, 255)),
             ("budget.png", "Average budget performance", f"{avg_budget:.2%}", (220, 255, 220)),
@@ -381,20 +394,20 @@ if st.button("Download PDF Summary"):
             x = margin_left + (i - 3) * (block_width + spacing)
             draw_kpi_card(x, y_bottom, *kpi_blocks[i])
 
-        # Footer
-        pdf.set_y(178)
-        pdf.set_font("Arial", "B", 10)
+        # Sector and MDA (moved below KPI blocks)
+        pdf.set_y(y_bottom + 25)
+        pdf.set_font("Arial", "B", 11)
         if selected_sector != "All":
-            pdf.cell(0, 10, encode_latin(f"Sector: {selected_sector}"), ln=True)
+            pdf.set_x(20)
+            pdf.cell(0, 6, encode_latin(f"Sector: {selected_sector}"), ln=True)
         if selected_mda != "All":
-            pdf.cell(0, 10, encode_latin(f"MDA: {selected_mda}"), ln=True)
-
-        pdf.set_font("Arial", "I", 8)
-        pdf.cell(0, 10, encode_latin(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"), ln=True, align="R")
+            pdf.set_x(20)
+            pdf.cell(0, 6, encode_latin(f"MDA: {selected_mda}"), ln=True)
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
             st.download_button("Download PDF", f, file_name=f"PMR_Summary_{quarter}_{year}.pdf")
+            
 
 # === Section: Batch Export — One PDF with pages for each MDA in selected Sector ===
 selected_sector_for_mda = st.selectbox("Select Sector for full MDA PDF", df["Sector"].dropna().unique())
