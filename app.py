@@ -380,7 +380,7 @@ if st.button("Download PDF Summary"):
             x = margin_left + (i - 3) * (block_width + spacing)
             draw_kpi_card(x, y_bottom, *kpi_blocks[i])
 
-        # Footer section
+        # Footer
         pdf.set_y(178)
         pdf.set_font("Arial", "B", 10)
         if selected_sector != "All":
@@ -389,8 +389,63 @@ if st.button("Download PDF Summary"):
             pdf.cell(0, 10, encode_latin(f"MDA: {selected_mda}"), ln=True)
 
         pdf.set_font("Arial", "I", 8)
-        pdf.cell(0, 10, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align="R")
+        pdf.cell(0, 10, encode_latin(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"), ln=True, align="R")
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
             st.download_button("Download PDF", f, file_name=f"PMR_Summary_{quarter}_{year}.pdf")
+
+# === Section: Batch Export — One PDF with pages for each MDA in selected Sector ===
+selected_sector_for_mda = st.selectbox("Select Sector for full MDA PDF", df["Sector"].dropna().unique())
+
+if st.button("Download All MDAs in Selected Sector as PDF"):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
+        pdf = PDF(orientation="L")
+
+        mda_list = df[df["Sector"] == selected_sector_for_mda]["MDA REVISED"].dropna().unique()
+        for mda_name in mda_list:
+            mda_df = df[(df["Sector"] == selected_sector_for_mda) & (df["MDA REVISED"] == mda_name)]
+            if mda_df.empty:
+                continue
+
+            avg_output = mda_df[output_col].mean(skipna=True)
+            avg_budget = mda_df[budget_col].mean(skipna=True)
+            total_approved = mda_df[approved_col].sum(skipna=True)
+            total_released = mda_df[released_col].sum(skipna=True)
+            total_programmes = mda_df["Programme / Project"].nunique()
+            total_kpis = mda_df[targets_col].count()
+
+            pdf.add_page()
+            pdf.set_xy(40, 10)
+            pdf.set_font("Arial", "B", 14)
+            pdf.multi_cell(0, 8, encode_latin(f"{quarter} {year} MDA Dashboard Summary"), align="C")
+            pdf.ln(10)
+
+            kpi_blocks = [
+                ("output.png", "Average output performance", f"{avg_output:.2%}", (210, 230, 255)),
+                ("budget.png", "Average budget performance", f"{avg_budget:.2%}", (220, 255, 220)),
+                ("approved.png", "Total budget approved", f"₦{total_approved:,.0f}", (255, 255, 210)),
+                ("released.png", "Total budget released", f"₦{total_released:,.0f}", (255, 230, 200)),
+                ("projects.png", "Total number of programmes/projects", f"{total_programmes:,}", (235, 230, 255)),
+                ("kpi.png", "Total number of KPIs", f"{total_kpis:,}", (240, 240, 240))
+            ]
+
+            y_top = pdf.get_y() + 5
+            for i in range(3):
+                x = margin_left + i * (block_width + spacing)
+                draw_kpi_card(x, y_top, *kpi_blocks[i])
+            y_bottom = y_top + (icon_size + block_height * 2 + 8)
+            for i in range(3, 6):
+                x = margin_left + (i - 3) * (block_width + spacing)
+                draw_kpi_card(x, y_bottom, *kpi_blocks[i])
+
+            pdf.set_y(178)
+            pdf.set_font("Arial", "B", 10)
+            pdf.cell(0, 10, encode_latin(f"Sector: {selected_sector_for_mda} | MDA: {mda_name}"), ln=True)
+            pdf.set_font("Arial", "I", 8)
+            pdf.cell(0, 10, encode_latin(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"), ln=True, align="R")
+
+        pdf.output(tmpfile.name)
+        with open(tmpfile.name, "rb") as f:
+            st.download_button("Download Sector PDF", f, file_name=f"{selected_sector_for_mda}_MDAs_Summary.pdf")
+            
