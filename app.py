@@ -395,7 +395,7 @@ if st.button("Download PDF Summary"):
             draw_kpi_card(x, y_bottom, *kpi_blocks[i])
 
         # Sector and MDA (positioned just below the logo, above KPIs)
-        pdf.set_xy(12, 30)  # Adjust Y to be slightly below the logo
+        pdf.set_xy(12, 35)  # Adjust Y to be slightly below the logo
         pdf.set_font("Arial", "B", 10)
         if selected_sector != "All":
             pdf.cell(0, 6, encode_latin(f"Sector: {selected_sector}"), ln=True)
@@ -403,7 +403,7 @@ if st.button("Download PDF Summary"):
             pdf.set_x(12)
             pdf.cell(0, 6, encode_latin(f"MDA: {selected_mda}"), ln=True)
 
-        pdf.ln(6)  # Add some space before KPI cards
+        pdf.ln(10)  # Add some space before KPI cards
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
@@ -480,8 +480,7 @@ if st.button("Download All MDAs in Selected Sector as PDF"):
             pdf.set_y(178)
             pdf.set_font("Arial", "B", 10)
             pdf.cell(0, 10, encode_latin(f"Sector: {selected_sector_for_mda} | MDA: {mda_name}"), ln=True)
-            pdf.set_font("Arial", "I", 8)
-            pdf.cell(0, 10, encode_latin(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"), ln=True, align="R")
+            
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
