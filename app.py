@@ -394,15 +394,16 @@ if st.button("Download PDF Summary"):
             x = margin_left + (i - 3) * (block_width + spacing)
             draw_kpi_card(x, y_bottom, *kpi_blocks[i])
 
-        # Sector and MDA (moved below KPI blocks)
-        pdf.set_y(y_bottom + 25)
-        pdf.set_font("Arial", "B", 11)
+        # Sector and MDA (positioned just below the logo, above KPIs)
+        pdf.set_xy(12, 30)  # Adjust Y to be slightly below the logo
+        pdf.set_font("Arial", "B", 10)
         if selected_sector != "All":
-            pdf.set_x(20)
             pdf.cell(0, 6, encode_latin(f"Sector: {selected_sector}"), ln=True)
         if selected_mda != "All":
-            pdf.set_x(20)
+            pdf.set_x(12)
             pdf.cell(0, 6, encode_latin(f"MDA: {selected_mda}"), ln=True)
+
+        pdf.ln(6)  # Add some space before KPI cards
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
