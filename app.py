@@ -317,58 +317,56 @@ class PDF(FPDF):
 def encode_latin(text):
     return text.encode("latin-1", "ignore").decode("latin-1")
 
-if st.button("Generate Summary PDF"):
+if st.button("Download PDF Summary"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
-        pdf = PDF(orientation="L")  # Landscape
+        pdf = PDF(orientation="L")
         pdf.add_page()
 
-        # Title
+        # Centered report title
         pdf.set_xy(40, 10)
         pdf.set_font("Arial", "B", 14)
-        pdf.cell(0, 10, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), ln=True, align="C")
-        pdf.ln(20)
+        pdf.multi_cell(0, 10, encode_latin(f"{quarter} {year} Performance Dashboard Summary"), align="C")
 
-        # Optional MDA subheader
+        pdf.ln(5)
+
+        # Sector and MDA headers
+        pdf.set_font("Arial", "B", 12)
+        if selected_sector != "All":
+            pdf.multi_cell(0, 8, encode_latin(f"Sector: {selected_sector}"))
         if selected_mda != "All":
-            pdf.set_font("Arial", "B", 12)
-            pdf.cell(0, 10, encode_latin(f"MDA: {selected_mda}"), ln=True)
-            pdf.ln(5)
+            pdf.multi_cell(0, 8, encode_latin(f"MDA: {selected_mda}"))
+        pdf.ln(5)
 
-        # Metric cards (3 per row)
-        pdf.set_font("Arial", "B", 13)
-        pdf.cell(0, 10, encode_latin("Summary Metrics"), ln=True)
-
-        metrics = [
-            ("Avg Output", f"{avg_output:.2%}"),
-            ("Avg Budget", f"{avg_budget:.2%}"),
-            ("Planned Output", f"{avg_planned:.0f}%"),
-            (f"Y{year} Budget", f"₦{total_approved:,.0f}"),
-            (f"Released at {quarter}", f"₦{total_released:,.0f}"),
-            ("Projects", f"{total_programmes:,}"),
-            ("Total KPIs", f"{total_kpis:,}")
+        # KPI blocks (each as 1-column, 2-row cell)
+        pdf.set_font("Arial", "B", 11)
+        kpi_blocks = [
+            ("Average output performance", f"{avg_output:.2%}"),
+            ("Average budget performance", f"{avg_budget:.2%}"),
+            ("Total budget approved", f"₦{total_approved:,.0f}"),
+            ("Total budget released", f"₦{total_released:,.0f}"),
+            ("Total number of programmes/projects", f"{total_programmes:,}"),
+            ("Total number of KPIs", f"{total_kpis:,}")
         ]
 
-        col_width = 90
-        row_height = 10
-        items_per_row = 3
+        block_width = 80
+        block_height_label = 10
+        block_height_value = 12
 
-        # Header row
-        for i, (label, _) in enumerate(metrics):
-            pdf.set_fill_color(240, 240, 240)
+        for label, value in kpi_blocks:
+            # Label row (wrap if long)
             pdf.set_font("Arial", "B", 11)
-            pdf.cell(col_width, row_height, encode_latin(label), border=1, fill=True, align="C")
-            if (i + 1) % items_per_row == 0:
-                pdf.ln(row_height)
+            x = pdf.get_x()
+            y = pdf.get_y()
+            pdf.multi_cell(block_width, block_height_label, encode_latin(label), border=1, align="C")
+            pdf.set_xy(x, y + block_height_label)
 
-        # Value row
-        for i, (_, value) in enumerate(metrics):
-            pdf.set_font("Arial", "", 11)
-            pdf.cell(col_width, row_height, encode_latin(value), border=1, align="C")
-            if (i + 1) % items_per_row == 0:
-                pdf.ln(row_height)
+            # Value row (always below)
+            pdf.set_font("Arial", "", 12)
+            pdf.multi_cell(block_width, block_height_value, encode_latin(value), border=1, align="C")
+            pdf.ln(2)
 
-        # Footer
-        pdf.ln(15)
+        # Footer with timestamp
+        pdf.ln(5)
         pdf.set_font("Arial", "I", 8)
         pdf.cell(0, 10, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align="R")
 
