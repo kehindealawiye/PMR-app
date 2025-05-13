@@ -384,7 +384,7 @@ if st.button("Download PDF Summary"):
             pdf.set_font("Arial", "", 11)
             pdf.multi_cell(block_width, block_height + 1, encode_latin(value), border=1, align="C", fill=True)
 
-        y_top = pdf.get_y() + 17
+        y_top = pdf.get_y() + 25
         for i in range(3):
             x = margin_left + i * (block_width + spacing)
             draw_kpi_card(x, y_top, *kpi_blocks[i])
@@ -403,7 +403,7 @@ if st.button("Download PDF Summary"):
             pdf.set_x(12)
             pdf.cell(0, 6, encode_latin(f"MDA: {selected_mda}"), ln=True)
 
-        pdf.ln(10)  # Add some space before KPI cards
+        pdf.ln(20)  # Add some space before KPI cards
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
