@@ -184,26 +184,35 @@ col9.plotly_chart(donut_chart(avg_budget, "Budget Performance"), use_container_w
 st.subheader("Drilldown Table")
 
 # Exact matching columns
+# === Drilldown Table Columns ===
 output_col = f"{quarter} Output Performance"
 budget_col = f"{quarter} Budget Performance"
 released_col = f"Budget Released as at {quarter}"
 planned_col = f"Planned {quarter} Perf"
 approved_col = f"Y{year} Approved Budget"
 tpr_score_col = "Cummulative TPR Score"
+targets_col = "Full Year Output Targets for Programme / Project Activities"
+actual_col = f"{quarter} Actual Output"
 
 drill_cols = [
     "Programme / Project",
+    targets_col,
+    actual_col,
     output_col,
     planned_col,
     budget_col,
     released_col,
+    approved_col,
     tpr_score_col,
     "TPR Status"
 ]
+
+# Insert Sector and MDA Revised at the top if present
 if "Sector" in df.columns:
     drill_cols.insert(0, "Sector")
 if "MDA REVISED" in df.columns:
     drill_cols.insert(1, "MDA REVISED")
+    
 
 def style_drilldown(df, output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col):
     def highlight_perf(val):
