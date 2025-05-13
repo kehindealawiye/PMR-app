@@ -454,11 +454,21 @@ if st.button("Download All MDAs in Selected Sector as PDF"):
             total_kpis = mda_df[targets_col].count()
 
             pdf.add_page()
+
+            # Title
             pdf.set_xy(40, 10)
             pdf.set_font("Arial", "B", 14)
             pdf.multi_cell(0, 8, encode_latin(f"{quarter} {year} MDA Dashboard Summary"), align="C")
-            pdf.ln(10)
 
+            # Sector and MDA info
+            pdf.set_xy(12, 35)
+            pdf.set_font("Arial", "B", 10)
+            pdf.cell(0, 6, encode_latin(f"Sector: {selected_sector_for_mda}"), ln=True)
+            pdf.set_x(12)
+            pdf.cell(0, 6, encode_latin(f"MDA: {mda_name}"), ln=True)
+            pdf.ln(20)  # space before cards
+
+            # KPI blocks
             kpi_blocks = [
                 ("output.png", "Average output performance", f"{avg_output:.2%}", (210, 230, 255)),
                 ("budget.png", "Average budget performance", f"{avg_budget:.2%}", (220, 255, 220)),
@@ -468,7 +478,7 @@ if st.button("Download All MDAs in Selected Sector as PDF"):
                 ("kpi.png", "Total number of KPIs", f"{total_kpis:,}", (240, 240, 240))
             ]
 
-            y_top = pdf.get_y() + 5
+            y_top = pdf.get_y() + 25  # consistent offset
             for i in range(3):
                 x = margin_left + i * (block_width + spacing)
                 draw_kpi_card(x, y_top, *kpi_blocks[i])
@@ -477,10 +487,10 @@ if st.button("Download All MDAs in Selected Sector as PDF"):
                 x = margin_left + (i - 3) * (block_width + spacing)
                 draw_kpi_card(x, y_bottom, *kpi_blocks[i])
 
+            # Footer
             pdf.set_y(178)
-            pdf.set_font("Arial", "B", 10)
-            pdf.cell(0, 10, encode_latin(f"Sector: {selected_sector_for_mda} | MDA: {mda_name}"), ln=True)
-            
+            pdf.set_font("Arial", "I", 8)
+            pdf.cell(0, 10, encode_latin(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"), ln=True, align="R")
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
