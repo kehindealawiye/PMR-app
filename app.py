@@ -89,6 +89,7 @@ approved_col = f"Y{year} Approved Budget"
 released_col = f"Budget Released as at {quarter}"
 planned_col = f"Planned {quarter} Perf"
 mda_col = "MDA REVISED"
+sector_col = "COFOG"
 kpi_col = f"{quarter} Output Target (in numbers)"
 
 # === Section: Clean Data ===
@@ -126,12 +127,12 @@ tpr_options = ["All"] + sorted(df["TPR Status"].dropna().unique().tolist())
 selected_tpr = colf1.selectbox("TPR Status", tpr_options)
 
 # Sector
-sector_options = ["All"] + sorted(df["Sector"].dropna().unique().tolist())
-selected_sector = colf2.selectbox("Sector", sector_options)
+sector_options = ["All"] + sorted(df["COFOG"].dropna().unique().tolist())
+selected_sector = colf2.selectbox("COFOG", sector_options)
 
 # MDA (filtered by Sector)
 if selected_sector != "All":
-    mda_subset = df[df["Sector"] == selected_sector]
+    mda_subset = df[df["COFOG"] == selected_sector]
 else:
     mda_subset = df
 
@@ -207,8 +208,10 @@ approved_col = f"Y{year} Approved Budget"
 tpr_score_col = "Cummulative TPR Score"
 targets_col = "Full Year Output Targets for Programme / Project Activities"
 actual_col = f"{quarter} Actual Output"
+sector_col = "COFOG"
 
 drill_cols = [
+    sector_col,
     "Programme / Project",
     targets_col,
     actual_col,
@@ -223,8 +226,8 @@ drill_cols = [
 ]
 
 # Insert Sector and MDA Revised at the top if present
-if "Sector" in df.columns:
-    drill_cols.insert(0, "Sector")
+if "COFOG" in df.columns:
+    drill_cols.insert(0, "COFOG")
 if "MDA REVISED" in df.columns:
     drill_cols.insert(1, "MDA REVISED")
     
