@@ -208,10 +208,8 @@ approved_col = f"Y{year} Approved Budget"
 tpr_score_col = "Cummulative TPR Score"
 targets_col = "Full Year Output Targets for Programme / Project Activities"
 actual_col = f"{quarter} Actual Output"
-sector_col = "COFOG"
 
 drill_cols = [
-    sector_col,
     "Programme / Project",
     targets_col,
     actual_col,
