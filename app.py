@@ -414,7 +414,7 @@ if st.button("Download PDF Summary"):
             
 
 # === Section: Batch Export — One PDF with pages for each MDA in selected Sector ===
-selected_sector_for_mda = st.selectbox("Select Sector for full MDA PDF", df["Sector"].dropna().unique())
+selected_sector_for_mda = st.selectbox("Select Sector for full MDA PDF", df["COFOG"].dropna().unique())
 
 if st.button("Download All MDAs in Selected Sector as PDF"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
