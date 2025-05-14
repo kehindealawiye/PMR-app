@@ -173,13 +173,11 @@ avg_planned = filtered_df[planned_col].mean(skipna=True)
 col1, col2, col3 = st.columns(3)
 col1.metric(f"Avg {quarter} Output", f"{avg_output:.2%}")
 col2.metric(f"Avg {quarter} Budget", f"{avg_budget:.2%}")
-col3.markdown(f"**Y{year} Budget**")
-col3.markdown(f"₦{total_approved:,.0f}")
+col3.metric(f"**Y{year} Budget**"), f"₦{total_approved:,.0f}")
 
 # Second row – Other metrics
 col4, col5, col6 = st.columns(3)
-col4.markdown(f"**Released at {quarter}**")
-col4.markdown(f"₦{total_released:,.0f}")
+col4.metric(f"**Released at {quarter}**"), f"₦{total_released:,.0f}")
 col5.metric("Projects", f"{total_programmes:,}")
 col6.metric("Total KPIs", f"{total_kpis:,}")
 
