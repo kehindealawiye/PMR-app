@@ -278,59 +278,59 @@ if show_pivot:
     val = st.multiselect("Value(s)", df.columns.tolist())
     aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
 
-if st.button("Generate Pivot Table"):
-    if filtered_df.empty:
-        st.warning("No data available based on current filters.")
-        st.stop()
-
-    if not val:
-        st.warning("Please select at least one value column.")
-        st.stop()
-
-    # Ensure value columns have usable data
-    if all(filtered_df[v].dropna().empty for v in val):
-        st.warning("No usable data found in selected value columns after filtering.")
-        st.stop()
-
-    try:
-        for v in val:
-            filtered_df[v] = pd.to_numeric(filtered_df[v], errors="coerce")
-
-        # Debug preview
-        preview_cols = list(set((rows or []) + (cols or []) + val))
-        st.caption("Preview of data before pivot:")
-        st.dataframe(filtered_df[preview_cols].dropna().head())
-
-        pivot = pd.pivot_table(
-            filtered_df,
-            index=rows if rows else None,
-            columns=cols if cols else None,
-            values=val,
-            aggfunc=aggfunc,
-            margins=False,
-            dropna=False  # Show all combinations even if result is NaN
-        )
-
-        if pivot.shape[0] == 0 or pivot.shape[1] == 0:
-            st.warning("Pivot table returned no rows or columns.")
+    if st.button("Generate Pivot Table"):
+        if filtered_df.empty:
+            st.warning("No data available based on current filters.")
             st.stop()
 
-        # Format output
-        if len(val) == 1:
-            col = val[0]
-            if "Performance" in col or "TPR" in col:
-                styled = pivot.style.format({col: "{:.0%}"})
-            elif "Budget" in col or "Approved" in col or "Released" in col:
-                styled = pivot.style.format({col: "₦{:,.0f}"})
-            else:
-                styled = pivot
-            st.dataframe(styled, use_container_width=True)
-        else:
-            st.dataframe(pivot, use_container_width=True)
+        if not val:
+            st.warning("Please select at least one value column.")
+            st.stop()
 
-    except Exception as e:
-        st.error(f"Error generating pivot table: {str(e)}")
-        
+        # Ensure value columns have usable data
+        if all(filtered_df[v].dropna().empty for v in val):
+            st.warning("No usable data found in selected value columns after filtering.")
+            st.stop()
+
+        try:
+            for v in val:
+                filtered_df[v] = pd.to_numeric(filtered_df[v], errors="coerce")
+
+            # Debug preview
+            preview_cols = list(set((rows or []) + (cols or []) + val))
+            st.caption("Preview of data before pivot:")
+            st.dataframe(filtered_df[preview_cols].dropna().head())
+
+            pivot = pd.pivot_table(
+                filtered_df,
+                index=rows if rows else None,
+                columns=cols if cols else None,
+                values=val,
+                aggfunc=aggfunc,
+                margins=False,
+                dropna=False  # Show all combinations even if result is NaN
+            )
+
+            if pivot.shape[0] == 0 or pivot.shape[1] == 0:
+                st.warning("Pivot table returned no rows or columns.")
+                st.stop()
+
+            # Format output
+            if len(val) == 1:
+                col = val[0]
+                if "Performance" in col or "TPR" in col:
+                    styled = pivot.style.format({col: "{:.0%}"})
+                elif "Budget" in col or "Approved" in col or "Released" in col:
+                    styled = pivot.style.format({col: "₦{:,.0f}"})
+                else:
+                    styled = pivot
+                st.dataframe(styled, use_container_width=True)
+            else:
+                st.dataframe(pivot, use_container_width=True)
+
+        except Exception as e:
+            st.error(f"Error generating pivot table: {str(e)}")
+
 
 # === Section: Export PDF Summary (Sector/MDA below, Footer adjusted) ===
 st.subheader("Export PDF Summary")
