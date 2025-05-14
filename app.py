@@ -169,13 +169,20 @@ total_programmes = filtered_df["Programme / Project"].nunique()
 total_kpis = filtered_df["Full Year Output Targets for Programme / Project Activities"].count()
 avg_planned = filtered_df[planned_col].mean(skipna=True)
 
-col1, col2, col3, col4, col5 = st.columns(5)
+# First row - Performance figures
+col1, col2, col3, col4 = st.columns(4)
 col1.metric(f"Avg {quarter} Output", f"{avg_output:.2%}")
 col2.metric(f"Avg {quarter} Budget", f"{avg_budget:.2%}")
-col3.metric(f"Y{year} Budget", f"₦{total_approved:,.0f}")
-col4.metric(f"Released at {quarter}", f"₦{total_released:,.0f}")
+
+col3.markdown("**Y{year} Budget**", format(year))
+col3.markdown(f"₦{total_approved:,.0f}")
+
+col4.markdown(f"Released at {quarter}**")
+col4.markdown(f"₦{total_released:,.0f}")
+
+# Second row - Count metrics
+col5, col6 =st.columns(2)
 col5.metric("Projects", f"{total_programmes:,}")
-col6, col7 = st.columns(2)
 col6.metric("Total KPIs", f"{total_kpis:,}")
 
 # === Section: Donut Charts ===
