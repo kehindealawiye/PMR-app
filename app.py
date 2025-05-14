@@ -267,13 +267,16 @@ st.caption(f"{len(filtered_df)} records matched your filters.")
 st.dataframe(styled_table, use_container_width=True)
 
 # === Section: Pivot Table Explorer ===
-st.subheader("Explore with Pivot Table")
+show_pivot = False  # Set to True to reveal it
 
-col1, col2 = st.columns(2)
-rows = col1.multiselect("Row(s)", df.columns.tolist())
-cols = col2.multiselect("Column(s)", df.columns.tolist())
-val = st.multiselect("Value(s)", df.columns.tolist())
-aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
+if show_pivot:
+    st.subheader("Explore with Pivot Table")
+
+    col1, col2 = st.columns(2)
+    rows = col1.multiselect("Row(s)", df.columns.tolist())
+    cols = col2.multiselect("Column(s)", df.columns.tolist())
+    val = st.multiselect("Value(s)", df.columns.tolist())
+    aggfunc = st.selectbox("Aggregation", ["sum", "mean", "count", "min", "max"])
 
 if st.button("Generate Pivot Table"):
     if filtered_df.empty:
