@@ -37,7 +37,7 @@ df = None
 
 if source_option == "Use GitHub default":
     try:
-        github_url = "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Y2024%20PMR%20dummy%20DOWNLOADED%20REPORT%20%20(1).xlsx"
+        github_url = "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Y2024%20PMR%20dummy.xlsx"
         df = pd.read_excel(github_url, sheet_name="PMR", engine="openpyxl")
         st.sidebar.success("Loaded default file from GitHub.")
     except Exception as e:
