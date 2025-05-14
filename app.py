@@ -406,6 +406,11 @@ if st.button("Download PDF Summary"):
 
         pdf.ln(25)  # Add some space before KPI cards
 
+        # Footer
+        pdf.set_y(178)
+        pdf.set_font("Arial", "I", 8)
+        pdf.cell(0, 10, encode_latin(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"), ln=True, align="R")
+
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
             st.download_button("Download PDF", f, file_name=f"PMR_Summary_{quarter}_{year}.pdf")
@@ -462,7 +467,7 @@ if st.button("Download All MDAs in Selected Sector as PDF"):
             pdf.multi_cell(0, 8, encode_latin(f"{quarter} {year} MDA Dashboard Summary"), align="C")
 
             # Sector and MDA info
-            pdf.set_xy(12, 35)
+            pdf.set_xy(12, 42)
             pdf.set_font("Arial", "B", 10)
             pdf.cell(0, 6, encode_latin(f"Sector: {selected_sector_for_mda}"), ln=True)
             pdf.set_x(12)
