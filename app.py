@@ -128,7 +128,7 @@ selected_tpr = colf1.selectbox("TPR Status", tpr_options)
 
 # Sector
 sector_options = ["All"] + sorted(df["COFOG"].dropna().unique().tolist())
-selected_sector = colf2.selectbox("COFOG", sector_options)
+selected_sector = colf2.selectbox("Sector", sector_options)
 
 # MDA (filtered by Sector)
 if selected_sector != "All":
