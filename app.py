@@ -36,52 +36,32 @@ source_option = st.sidebar.radio(
 df = None
 
 if source_option == "Use GitHub default":
+    # Define your preloaded report options
+    default_files = {
+        "Q3 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q3%20Y2024%20Consolidated%20PMR%20.xlsx",
+        "Q4 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Y2024%20PMR%20dummy.xlsx"
+    }
+
+    selected_label = st.sidebar.selectbox("Select preloaded report", list(default_files.keys()))
+    github_url = default_files[selected_label]
+
+    # Extract Year and Quarter from selected file
+    match = re.search(r"Q(\d{1}) (\d{4})", selected_label)
+    if match:
+        inferred_quarter = f"Q{match.group(1)}"
+        inferred_year = match.group(2)
+        
+        # Preselect the quarter and year dropdowns based on the extracted values
+        quarter = st.sidebar.selectbox("Select Quarter", [inferred_quarter] + available_quarters, index=available_quarters.index(inferred_quarter) if inferred_quarter in available_quarters else 0)
+        year = st.sidebar.selectbox("Select Year", [inferred_year] + available_years, index=available_years.index(inferred_year) if inferred_year in available_years else 0)
+
     try:
-        github_url = "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Y2024%20PMR%20dummy.xlsx"
         df = pd.read_excel(github_url, sheet_name="PMR", engine="openpyxl")
-        st.sidebar.success("Loaded default file from GitHub.")
+        st.sidebar.success(f"Loaded: {selected_label}")
     except Exception as e:
         st.sidebar.error(f"Failed to load default sheet: {e}")
         st.stop()
-
-elif source_option == "Upload Excel File":
-    uploaded_file = st.sidebar.file_uploader("Upload Excel (.xlsx)", type=["xlsx"])
-    if uploaded_file:
-        df = pd.read_excel(uploaded_file, sheet_name="PMR")
-    else:
-        st.warning("Please upload a file to continue.")
-        st.stop()
-
-elif source_option == "Enter Google Sheets Link":
-    sheet_link = st.sidebar.text_input("Paste your Google Sheets link")
-    if sheet_link:
-        try:
-            sheet_id = sheet_link.split("/d/")[1].split("/")[0]
-            url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&sheet=PMR"
-            df = pd.read_csv(url)
-        except Exception as e:
-            st.error(f"Error loading sheet: {e}")
-            st.stop()
-    else:
-        st.warning("Please paste a link to continue.")
-        st.stop()
-
-# === Section: Detect Quarter and Year ===
-df.columns = [col.strip() for col in df.columns]
-columns = df.columns.tolist()
-available_quarters = sorted(set(re.findall(r"(Q\d) Output Performance", " ".join(columns))))
-available_years = sorted(set(re.findall(r"Y(\d{4}) Approved Budget", " ".join(columns))))
-
-if not available_quarters:
-    st.warning("No column like 'Q4 Output Performance' found.")
-    st.stop()
-if not available_years:
-    st.warning("No column like 'Y2024 Approved Budget' found.")
-    st.stop()
-
-quarter = st.sidebar.selectbox("Select Quarter", available_quarters)
-year = st.sidebar.selectbox("Select Year", available_years)
-
+        
 # === Section: Column Mapping ===
 output_col = f"{quarter} Output Performance"
 budget_col = f"{quarter} Budget Performance"
