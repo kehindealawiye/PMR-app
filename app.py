@@ -163,13 +163,6 @@ selected_tpr = colf1.selectbox("TPR Status", tpr_options)
 sector_options = ["All"] + sorted(df["COFOG"].dropna().unique().tolist())
 selected_sector = colf2.selectbox("Sector", sector_options)
 
-# Sector dropdown with auto-reset
-selected_sector = st.selectbox(
-    "Sector", sector_options,
-    key="selected_sector",
-    on_change=lambda: st.session_state.pop("selected_mda", None)
-)
-
 # MDA filtered by selected sector
 if selected_sector != "All":
     mda_subset = df[df["COFOG"] == selected_sector]
