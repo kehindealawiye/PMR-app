@@ -108,13 +108,19 @@ else:
     st.error("Column 'Cummulative TPR Score' not found in uploaded data.")
     st.stop()
 
-# Assign TPR Status
+# Assign TPR Status safely
 def tpr_category(score):
-    if pd.isna(score): return None
-    if score >= 0.8: return "On Track"
-    elif score >= 0.6: return "At Risk"
-    else: return "Off Track"
+    if pd.isna(score) or score == "":
+        return None
+    if score >= 0.8:
+        return "On Track"
+    elif score >= 0.6:
+        return "At Risk"
+    else:
+        return "Off Track"
 
+# Apply function to a clean numeric column
+df["TPR Score"] = pd.to_numeric(df["Cummulative TPR Score"], errors="coerce")
 df["TPR Status"] = df["TPR Score"].apply(tpr_category)
 
 # === Section: Dashboard Filters ===
