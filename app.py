@@ -85,10 +85,10 @@ available_quarters = sorted(set(re.findall(r"(Q\d) Output Performance", " ".join
 available_years = sorted(set(re.findall(r"Y(\d{4}) Approved Budget", " ".join(columns))))
 
 if not available_quarters:
-    st.warning("No column like 'Q4 Output Performance' found.")
+    st.warning("No column like 'Output Performance' found.")
     st.stop()
 if not available_years:
-    st.warning("No column like 'Y2024 Approved Budget' found.")
+    st.warning("No column like 'Approved Budget' found.")
     st.stop()
 
 # Fallbacks
@@ -163,14 +163,27 @@ selected_tpr = colf1.selectbox("TPR Status", tpr_options)
 sector_options = ["All"] + sorted(df["COFOG"].dropna().unique().tolist())
 selected_sector = colf2.selectbox("Sector", sector_options)
 
-# MDA (filtered by Sector)
+# Sector dropdown with auto-reset
+selected_sector = st.selectbox(
+    "Sector", sector_options,
+    key="selected_sector",
+    on_change=lambda: st.session_state.pop("selected_mda", None)
+)
+
+# MDA filtered by selected sector
 if selected_sector != "All":
     mda_subset = df[df["COFOG"] == selected_sector]
 else:
     mda_subset = df
 
-mda_options = ["All"] + sorted(mda_subset[mda_col].dropna().unique().tolist())
-selected_mda = colf3.selectbox("MDA", mda_options)
+if mda_subset is not None and mda_col in mda_subset.columns:
+    mda_options = ["All"] + sorted(mda_subset[mda_col].dropna().unique().tolist())
+else:
+    mda_options = ["All"]
+
+# MDA dropdown with memory-aware selection
+selected_mda = colf3.selectbox("MDA", mda_options, key="selected_mda")
+
 
 # Programme/Project (filtered by MDA)
 if selected_mda != "All":
