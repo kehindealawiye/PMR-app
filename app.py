@@ -23,7 +23,7 @@ def encode_latin(text):
     
 
 st.set_page_config(page_title="PMR Dashboard", layout="wide")
-st.markdown("📊 Performance Management Report Dashboard")
+st.title("🏛️📊 Performance Management Report Dashboard")
 
 # === Section: File Upload and Setup ===
 st.sidebar.header("🗂️ Report Settings")
@@ -142,11 +142,11 @@ def tpr_category(score):
     if pd.isna(score) or score == "":
         return None
     if score >= 0.8:
-        return "On Track"
+        return "✅On Track"
     elif score >= 0.6:
-        return "At Risk"
+        return "⚠️At Risk"
     else:
-        return "Off Track"
+        return "❌Off Track"
 
 # Apply function to a clean numeric column
 df["TPR Score"] = pd.to_numeric(df["Cummulative TPR Score"], errors="coerce")
@@ -214,7 +214,7 @@ avg_planned = filtered_df[planned_col].mean(skipna=True)
 col1, col2, col3 = st.columns(3)
 col1.metric(f"📈 Avg {quarter} Output", f"{avg_output:.2%}")
 col2.metric(f"📈 Avg {quarter} Budget", f"{avg_budget:.2%}")
-col3.metric(f"🏛️ Y{year} Budget", f"₦{total_approved:,.0f}")
+col3.metric(f"🏦 Y{year} Budget", f"₦{total_approved:,.0f}")
 
 # Second row – Other metrics
 col4, col5, col6 = st.columns(3)
@@ -240,7 +240,7 @@ col8.plotly_chart(donut_chart(avg_output, "🎯Output Performance"), use_contain
 col9.plotly_chart(donut_chart(avg_budget, "💰Budget Performance"), use_container_width=True)
 
 # === Section: Drilldown Table ===
-st.subheader("Drilldown Table")
+st.subheader("🧭 Drilldown Table")
 
 # Exact matching columns
 # === Drilldown Table Columns ===
