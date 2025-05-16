@@ -30,14 +30,14 @@ st.sidebar.header("🗂️ Report Settings")
 
 source_option = st.sidebar.radio(
     "Choose data source:",
-    ["Use GitHub default", "Upload Excel File", "Enter Google Sheets Link"]
+    ["Explore Default reports", "Upload Excel File", "Enter Google Sheets Link"]
 )
 
 df = None
 quarter = None
 year = None
 
-if source_option == "Use GitHub default":
+if source_option == "Explore Default reports":
     # Define your preloaded report options
     default_files = {
         "Q4 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Y2024%20PMR%20dummy.xlsx",
@@ -47,11 +47,16 @@ if source_option == "Use GitHub default":
     }
 
     selected_label = st.sidebar.selectbox("Select preloaded report", list(default_files.keys()))
-    github_url = default_files[selected_label]
+    data_url = default_files[selected_label]
 
     try:
-        df = pd.read_excel(github_url, sheet_name="PMR", engine="openpyxl")
+        if "docs.google.com" in data_url:
+            df = pd.read_csv(data_url)
+        else:
+            df = pd.read_excel(data_url, sheet_name="PMR", engine="openpyxl")
+
         st.sidebar.success(f"Loaded: {selected_label}")
+
     except Exception as e:
         st.sidebar.error(f"Failed to load default sheet: {e}")
         st.stop()
