@@ -40,10 +40,10 @@ year = None
 if source_option == "Use GitHub default":
     # Define your preloaded report options
     default_files = {
-        "Q1 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q1%20%202024%20Consolidated%20PMR%20.xlsx",
-        "Q2 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q2%202024%20Consolidated%20PMR%20.xlsx",
+        "Q4 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Y2024%20PMR%20dummy.xlsx",
         "Q3 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q3%20Y2024%20Consolidated%20PMR%20.xlsx",
-        "Q4 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Y2024%20PMR%20dummy.xlsx"
+        "Q2 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q2%202024%20Consolidated%20PMR%20.xlsx",
+        "Q1 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q1%20%202024%20Consolidated%20PMR%20.xlsx"
     }
 
     selected_label = st.sidebar.selectbox("Select preloaded report", list(default_files.keys()))
