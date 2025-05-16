@@ -23,7 +23,7 @@ def encode_latin(text):
     
 
 st.set_page_config(page_title="PMR Dashboard", layout="wide")
-st.title("📊 Performance Management Report Dashboard")
+st.markdown("📊 Performance Management Report Dashboard")
 
 # === Section: File Upload and Setup ===
 st.sidebar.header("🗂️ Report Settings")
@@ -106,8 +106,10 @@ if source_option == "Use GitHub default":
         if y in available_years:
             inferred_year = y
 
-quarter = st.sidebar.selectbox("Select Quarter", available_quarters, index=available_quarters.index(inferred_quarter))
-year = st.sidebar.selectbox("Select Year", available_years, index=available_years.index(inferred_year))
+quarter = inferred_quarter
+year = inferred_year
+st.sidebar.markdown(f"**📅 Selected Quarter:** {quarter}")
+st.sidebar.markdown(f"**📆 Selected Year:** {year}")
         
 # === Section: Column Mapping ===
 output_col = f"{quarter} Output Performance"
@@ -210,21 +212,21 @@ avg_planned = filtered_df[planned_col].mean(skipna=True)
 
 # First row – Performance figures
 col1, col2, col3 = st.columns(3)
-col1.metric(f"Avg {quarter} Output", f"{avg_output:.2%}")
-col2.metric(f"Avg {quarter} Budget", f"{avg_budget:.2%}")
-col3.metric(f"Y{year} Budget", f"₦{total_approved:,.0f}")
+col1.metric(f"📈 Avg {quarter} Output", f"{avg_output:.2%}")
+col2.metric(f"📈 Avg {quarter} Budget", f"{avg_budget:.2%}")
+col3.metric(f"🏛️ Y{year} Budget", f"₦{total_approved:,.0f}")
 
 # Second row – Other metrics
 col4, col5, col6 = st.columns(3)
-col4.metric(f"Released at {quarter}", f"₦{total_released:,.0f}")
-col5.metric("Projects", f"{total_programmes:,}")
-col6.metric("Total KPIs", f"{total_kpis:,}")
+col4.metric(f"🧾 Released at {quarter}", f"₦{total_released:,.0f}")
+col5.metric("🔍 Total Programmes/Projects", f"{total_programmes:,}")
+col6.metric("📊 Total KPIs", f"{total_kpis:,}")
 
 # === Section: Donut Charts ===
 def donut_chart(value, label):
     zone = "green" if value >= 0.7 else "orange" if value >= 0.5 else "red"
     chart = go.Figure(go.Pie(
-        labels=["Achieved", "Remaining"],
+        labels=["🚀Achieved", "🔴Remaining"],
         values=[value, 1 - value],
         hole=0.6,
         marker=dict(colors=[zone, "#E0E0E0"]),
@@ -234,8 +236,8 @@ def donut_chart(value, label):
     return chart
 
 col8, col9 = st.columns(2)
-col8.plotly_chart(donut_chart(avg_output, "Output Performance"), use_container_width=True)
-col9.plotly_chart(donut_chart(avg_budget, "Budget Performance"), use_container_width=True)
+col8.plotly_chart(donut_chart(avg_output, "🎯Output Performance"), use_container_width=True)
+col9.plotly_chart(donut_chart(avg_budget, "💰Budget Performance"), use_container_width=True)
 
 # === Section: Drilldown Table ===
 st.subheader("Drilldown Table")
