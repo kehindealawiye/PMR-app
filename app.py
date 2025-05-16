@@ -374,7 +374,7 @@ if show_pivot:
 
 
 # === Section: Export PDF Summary (Sector/MDA below, Footer adjusted) ===
-st.subheader("Export PDF Summary")
+st.subheader("📋 Export PDF Summary")
 
 from datetime import datetime
 from fpdf import FPDF
@@ -389,7 +389,7 @@ class PDF(FPDF):
 def encode_latin(text):
     return text.encode("latin-1", "ignore").decode("latin-1")
 
-if st.button("Download PDF Summary"):
+if st.button("📥💾 Download PDF Summary"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
         pdf = PDF(orientation="L")
         pdf.add_page()
@@ -464,9 +464,9 @@ if st.button("Download PDF Summary"):
             
 
 # === Section: Batch Export — One PDF with pages for each MDA in selected Sector ===
-selected_sector_for_mda = st.selectbox("Select Sector for full MDA PDF", df["COFOG"].dropna().unique())
+selected_sector_for_mda = st.selectbox("🗂️ Select Sector for full MDA PDF", df["COFOG"].dropna().unique())
 
-if st.button("Download All MDAs in Selected Sector as PDF"):
+if st.button("📥💾 Download All MDAs in Selected Sector as PDF"):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
         pdf = PDF(orientation="L")
 
