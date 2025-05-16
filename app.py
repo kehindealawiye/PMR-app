@@ -40,8 +40,8 @@ year = None
 if source_option == "Use GitHub default":
     # Define your preloaded report options
     default_files = {
-        "Q1 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q2%202024%20Consolidated%20PMR%20.xlsx",
-        "Q2 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q1%20%202024%20Consolidated%20PMR%20.xlsx",
+        "Q1 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q1%20%2024%20Consolidated%20PMR%20.xlsx",
+        "Q2 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q2%20%2024%20Consolidated%20PMR%20.xlsx",
         "Q3 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q3%20Y2024%20Consolidated%20PMR%20.xlsx",
         "Q4 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Y2024%20PMR%20dummy.xlsx"
     }
@@ -85,10 +85,10 @@ available_quarters = sorted(set(re.findall(r"(Q\d) Output Performance", " ".join
 available_years = sorted(set(re.findall(r"Y(\d{4}) Approved Budget", " ".join(columns))))
 
 if not available_quarters:
-    st.warning("No column like 'Output Performance' found.")
+    st.warning("No quarter detected")
     st.stop()
 if not available_years:
-    st.warning("No column like 'Approved Budget' found.")
+    st.warning("No year detected")
     st.stop()
 
 # Fallbacks
