@@ -12,6 +12,11 @@ import zipfile
 from fpdf import FPDF
 from st_aggrid import AgGrid, GridOptionsBuilder
 
+gb = GridOptionsBuilder.from_dataframe(filtered_df[available_cols])
+gb.configure_default_cellStyle({"whiteSpace": "normal", "wordWrap": "break-word"})
+gb.configure_grid_options(domLayout='normal')
+
+
 class PDF(FPDF):
     def header(self):
         try:
@@ -252,7 +257,10 @@ col9.plotly_chart(donut_chart(avg_budget, "💰Budget Performance"), use_contain
 # === Section: Drilldown Table ===
 st.subheader("🧭 Drilldown Table")
 
-# Table view option
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+
+# === Section: Drilldown Table with Toggle ===
+st.subheader("🧭 Drilldown Table")
 table_view = st.radio("Select Table View Type:", ["Styled View", "AgGrid Interactive"], horizontal=True)
 
 # Key columns
@@ -286,7 +294,7 @@ if "MDA REVISED" in df.columns:
 
 available_cols = [col for col in drill_cols if col in filtered_df.columns]
 
-# Styling function
+# === Styled View Function ===
 def style_drilldown(df, output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col):
     def highlight_perf(val):
         if pd.isna(val): return ""
@@ -312,24 +320,35 @@ def style_drilldown(df, output_col, budget_col, approved_col, released_col, plan
             budget_col: "{:.0%}",
         })
 
-# Display table
+# === Display Table ===
 st.caption(f"{len(filtered_df)} records matched your filters.")
 
 if table_view == "Styled View":
     styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col)
     st.dataframe(styled_table, use_container_width=True)
 
-else:  # AgGrid Interactive View
-    gb = GridOptionsBuilder.from_dataframe(filtered_df[available_cols])
-    gb.configure_default_column(editable=False, groupable=True)
-    gb.configure_selection("single")
-    gb.configure_pagination(paginationAutoPageSize=True)
+else:  # === AgGrid Interactive ===
+    # Format performance & budget columns for AgGrid
+    aggrid_df = filtered_df[available_cols].copy()
+    aggrid_df[output_col] = aggrid_df[output_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+    aggrid_df[budget_col] = aggrid_df[budget_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+    aggrid_df[planned_col] = aggrid_df[planned_col].apply(lambda x: f"{x:.0f}%" if pd.notna(x) else "")
+    aggrid_df[tpr_score_col] = aggrid_df[tpr_score_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+    aggrid_df[approved_col] = aggrid_df[approved_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
+    aggrid_df[released_col] = aggrid_df[released_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
+
+    # Configure AgGrid
+    gb = GridOptionsBuilder.from_dataframe(aggrid_df)
+    gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True)
+    gb.configure_grid_options(domLayout='normal')
+    gb.configure_selection(selection_mode="single", use_checkbox=False)
     grid_options = gb.build()
 
     AgGrid(
-        filtered_df[available_cols],
+        aggrid_df,
         gridOptions=grid_options,
-        height=800,
+        update_mode=GridUpdateMode.NO_UPDATE,
+        height=700,
         theme="material",
         fit_columns_on_grid_load=True
     )
