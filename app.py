@@ -8,6 +8,7 @@ import tempfile
 from datetime import datetime
 import re
 import os
+import io
 import zipfile
 from fpdf import FPDF
 from st_aggrid import AgGrid, GridOptionsBuilder
@@ -342,9 +343,11 @@ if table_view == "Styled View":
     st.dataframe(styled_table, use_container_width=True)
 
 else:  # === AgGrid Interactive ===
+    import io
+
     aggrid_df = filtered_df[available_cols].copy()
 
-    # Format specific columns
+    # Format performance & budget columns
     aggrid_df[output_col] = aggrid_df[output_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
     aggrid_df[budget_col] = aggrid_df[budget_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
     aggrid_df[planned_col] = aggrid_df[planned_col].apply(lambda x: f"{x:.0f}%" if pd.notna(x) else "")
@@ -352,21 +355,34 @@ else:  # === AgGrid Interactive ===
     aggrid_df[approved_col] = aggrid_df[approved_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
     aggrid_df[released_col] = aggrid_df[released_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
 
-    # ✅ Safe place to put this
+    # Configure AgGrid
     gb = GridOptionsBuilder.from_dataframe(aggrid_df)
     gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True)
     gb.configure_grid_options(domLayout='normal')
     gb.configure_selection(selection_mode="single", use_checkbox=False)
     grid_options = gb.build()
 
+    # Display AgGrid
     AgGrid(
         aggrid_df,
         gridOptions=grid_options,
         update_mode=GridUpdateMode.NO_UPDATE,
-        height=700,
+        height=800,
         theme="material",
         fit_columns_on_grid_load=True
     )
+
+    # === Download AgGrid as Excel ===
+    towrite = io.BytesIO()
+    aggrid_df.to_excel(towrite, index=False, sheet_name="Drilldown")
+    towrite.seek(0)
+    st.download_button(
+        label="📥 Download Drilldown as Excel",
+        data=towrite,
+        file_name=f"Drilldown_{quarter}_{year}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 
 
 # === Section: Pivot Table Explorer ===
