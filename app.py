@@ -11,7 +11,7 @@ import os
 import io
 import zipfile
 from fpdf import FPDF
-from st_aggrid import AgGrid, GridOptionsBuilder
+
 
 class PDF(FPDF):
     def header(self):
@@ -336,12 +336,10 @@ if table_view == "Styled View":
     styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col)
     st.dataframe(styled_table, use_container_width=True)
 
+# === AgGrid Interactive ===
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-import io
 
-else:  # === AgGrid Interactive ===
-    import io
-
+else:  
     aggrid_df = filtered_df[available_cols].copy()
 
     # Format performance & budget columns
