@@ -13,10 +13,6 @@ import zipfile
 from fpdf import FPDF
 from st_aggrid import AgGrid, GridOptionsBuilder
 
-gb.configure_default_cellStyle({"whiteSpace": "normal", "wordWrap": "break-word"})
-gb.configure_grid_options(domLayout='normal')
-
-
 class PDF(FPDF):
     def header(self):
         try:
