@@ -265,13 +265,11 @@ if selected_mda != "All":
 if selected_proj != "All":
     filtered_df = filtered_df[filtered_df["Programme / Project"] == selected_project]
 
-# === Section: Drilldown Table ===
+# === Section: Drilldown Table with Toggle ===
 st.subheader("🧭 Drilldown Table")
 
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-# === Section: Drilldown Table with Toggle ===
-st.subheader("🧭 Drilldown Table")
 table_view = st.radio("Select Table View Type:", ["Styled View", "AgGrid Interactive"], horizontal=True)
 
 # Key columns
