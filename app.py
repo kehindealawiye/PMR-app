@@ -339,77 +339,75 @@ if table_view == "Styled View":
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import io
 
-aggrid_df = filtered_df[available_cols].copy()
+else:  # === AgGrid Interactive ===
+    import io
 
-# Format relevant columns
-aggrid_df[output_col] = aggrid_df[output_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
-aggrid_df[budget_col] = aggrid_df[budget_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
-aggrid_df[planned_col] = aggrid_df[planned_col].apply(lambda x: f"{x:.0f}%" if pd.notna(x) else "")
-aggrid_df[tpr_score_col] = aggrid_df[tpr_score_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
-aggrid_df[approved_col] = aggrid_df[approved_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
-aggrid_df[released_col] = aggrid_df[released_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
+    aggrid_df = filtered_df[available_cols].copy()
 
-# JS-based row styling
-heatmap_style = """
-function(params) {
-    const val = parseFloat(params.value?.replace(/[^0-9.]/g, ''));
-    const field = params.colDef.field;
-    if (!isNaN(val)) {
-        if (field.includes("Output") || field.includes("Budget")) {
+    # Format performance & budget columns
+    aggrid_df[output_col] = aggrid_df[output_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+    aggrid_df[budget_col] = aggrid_df[budget_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+    aggrid_df[planned_col] = aggrid_df[planned_col].apply(lambda x: f"{x:.0f}%" if pd.notna(x) else "")
+    aggrid_df[tpr_score_col] = aggrid_df[tpr_score_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+    aggrid_df[approved_col] = aggrid_df[approved_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
+    aggrid_df[released_col] = aggrid_df[released_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
+
+    # Configure AgGrid
+    gb = GridOptionsBuilder.from_dataframe(aggrid_df)
+    gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True, minWidth=140)
+    gb.configure_grid_options(domLayout='normal')
+    gb.configure_selection(selection_mode="single", use_checkbox=False)
+
+    # Heatmap logic via per-column cellStyle
+    perf_style = {
+        "function": """
+        function(params) {
+            let val = parseFloat(params.value?.replace(/[^0-9.]/g, ''));
             if (val >= 70) return {backgroundColor: '#b6e8b0'};
             if (val >= 50) return {backgroundColor: '#fff4b3'};
             return {backgroundColor: '#f4b9b9'};
         }
-        if (field.includes("TPR")) {
+        """
+    }
+
+    tpr_style = {
+        "function": """
+        function(params) {
+            let val = parseFloat(params.value?.replace(/[^0-9.]/g, ''));
             if (val >= 80) return {backgroundColor: '#b6e8b0'};
             if (val >= 60) return {backgroundColor: '#fff4b3'};
             return {backgroundColor: '#f4b9b9'};
         }
+        """
     }
-    return null;
-}
-"""
 
-# Configure
-gb = GridOptionsBuilder.from_dataframe(aggrid_df)
-gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True, minWidth=140)
-gb.configure_grid_options(domLayout='normal')
-grid_options = gb.build()
-grid_options['getRowStyle'] = heatmap_style  # ✅ attach custom JS
+    gb.configure_column(output_col, cellStyle=perf_style)
+    gb.configure_column(budget_col, cellStyle=perf_style)
+    gb.configure_column(tpr_score_col, cellStyle=tpr_style)
 
-AgGrid(
-    aggrid_df,
-    gridOptions=grid_options,
-    update_mode=GridUpdateMode.NO_UPDATE,
-    height=800,
-    theme="material",
-    fit_columns_on_grid_load=True
-)
-    
+    grid_options = gb.build()
 
-# === Export logic for both views ===
-if table_view == "Styled View":
-    export_df = filtered_df[available_cols].copy()
-    export_df[output_col] = export_df[output_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
-    export_df[budget_col] = export_df[budget_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
-    export_df[planned_col] = export_df[planned_col].apply(lambda x: f"{x:.0f}%" if pd.notna(x) else "")
-    export_df[tpr_score_col] = export_df[tpr_score_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
-    export_df[approved_col] = export_df[approved_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
-    export_df[released_col] = export_df[released_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
-else:
-    export_df = aggrid_df.copy()  # Already formatted
+    # Display AgGrid
+    AgGrid(
+        aggrid_df,
+        gridOptions=grid_options,
+        update_mode=GridUpdateMode.NO_UPDATE,
+        height=800,
+        theme="material",
+        fit_columns_on_grid_load=True
+    )
 
-# === Single Excel Download Button ===
-towrite = io.BytesIO()
-export_df.to_excel(towrite, index=False, sheet_name="Drilldown")
-towrite.seek(0)
+    # === Download the same view as Excel ===
+    towrite = io.BytesIO()
+    aggrid_df.to_excel(towrite, index=False, sheet_name="Drilldown")
+    towrite.seek(0)
 
-st.download_button(
-    label="📥 Download Drilldown as Excel",
-    data=towrite,
-    file_name=f"Drilldown_{quarter}_{year}.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
+    st.download_button(
+        label="📥 Download Drilldown as Excel",
+        data=towrite,
+        file_name=f"Drilldown_{quarter}_{year}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 
 # === Section: Pivot Table Explorer ===
