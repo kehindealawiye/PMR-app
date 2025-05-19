@@ -23,6 +23,10 @@ def encode_latin(text):
     
 
 st.set_page_config(page_title="PMR Dashboard", layout="wide")
+# Force page break before the title
+st.markdown('<div style="page-break-before: always;"></div>', unsafe_allow_html=True)
+
+# Now add the title
 st.title("🏛️📊 Performance Management Report Dashboard")
 
 # === Section: File Upload and Setup ===
