@@ -351,7 +351,7 @@ else:  # === AgGrid Interactive ===
 
     # Configure AgGrid
     gb = GridOptionsBuilder.from_dataframe(aggrid_df)
-    gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True)
+    gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True, minWidth=120)
     gb.configure_grid_options(domLayout='normal')
     gb.configure_selection(selection_mode="single", use_checkbox=False)
     grid_options = gb.build()
