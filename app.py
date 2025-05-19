@@ -366,16 +366,30 @@ else:  # === AgGrid Interactive ===
         fit_columns_on_grid_load=True
     )
 
-    # === Download AgGrid as Excel ===
-    towrite = io.BytesIO()
-    aggrid_df.to_excel(towrite, index=False, sheet_name="Drilldown")
-    towrite.seek(0)
-    st.download_button(
-        label="📥 Download Drilldown as Excel",
-        data=towrite,
-        file_name=f"Drilldown_{quarter}_{year}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+# Copy AgGrid-formatted or Styled-formatted dataframe for download
+if table_view == "Styled View":
+    export_df = filtered_df[available_cols].copy()
+    export_df[output_col] = export_df[output_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+    export_df[budget_col] = export_df[budget_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+    export_df[planned_col] = export_df[planned_col].apply(lambda x: f"{x:.0f}%" if pd.notna(x) else "")
+    export_df[tpr_score_col] = export_df[tpr_score_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
+    export_df[approved_col] = export_df[approved_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
+    export_df[released_col] = export_df[released_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
+else:
+    export_df = aggrid_df.copy()  # Already preformatted in AgGrid section
+
+# Export to Excel
+towrite = io.BytesIO()
+export_df.to_excel(towrite, index=False, sheet_name="Drilldown")
+towrite.seek(0)
+
+# One download button for both views
+st.download_button(
+    label="📥 Download Drilldown as Excel",
+    data=towrite,
+    file_name=f"Drilldown_{quarter}_{year}.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
 
 
 
