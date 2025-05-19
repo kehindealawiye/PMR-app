@@ -12,7 +12,6 @@ import zipfile
 from fpdf import FPDF
 from st_aggrid import AgGrid, GridOptionsBuilder
 
-gb = GridOptionsBuilder.from_dataframe(filtered_df[available_cols])
 gb.configure_default_cellStyle({"whiteSpace": "normal", "wordWrap": "break-word"})
 gb.configure_grid_options(domLayout='normal')
 
@@ -343,8 +342,9 @@ if table_view == "Styled View":
     st.dataframe(styled_table, use_container_width=True)
 
 else:  # === AgGrid Interactive ===
-    # Format performance & budget columns for AgGrid
     aggrid_df = filtered_df[available_cols].copy()
+
+    # Format specific columns
     aggrid_df[output_col] = aggrid_df[output_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
     aggrid_df[budget_col] = aggrid_df[budget_col].apply(lambda x: f"{x:.0%}" if pd.notna(x) else "")
     aggrid_df[planned_col] = aggrid_df[planned_col].apply(lambda x: f"{x:.0f}%" if pd.notna(x) else "")
@@ -352,7 +352,7 @@ else:  # === AgGrid Interactive ===
     aggrid_df[approved_col] = aggrid_df[approved_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
     aggrid_df[released_col] = aggrid_df[released_col].apply(lambda x: f"₦{x:,.0f}" if pd.notna(x) else "")
 
-    # Configure AgGrid
+    # ✅ Safe place to put this
     gb = GridOptionsBuilder.from_dataframe(aggrid_df)
     gb.configure_default_column(wrapText=True, autoHeight=True, resizable=True)
     gb.configure_grid_options(domLayout='normal')
