@@ -251,8 +251,10 @@ col9.plotly_chart(donut_chart(avg_budget, "💰Budget Performance"), use_contain
 # === Section: Drilldown Table ===
 st.subheader("🧭 Drilldown Table")
 
-# Exact matching columns
-# === Drilldown Table Columns ===
+# View toggle
+view_option = st.radio("Select Table View Type:", ["Styled View", "Interactive View"], horizontal=True)
+
+# Define key columns
 output_col = f"{quarter} Output Performance"
 budget_col = f"{quarter} Budget Performance"
 released_col = f"Budget Released as at {quarter}"
@@ -262,6 +264,7 @@ tpr_score_col = "Cummulative TPR Score"
 targets_col = "Full Year Output Targets for Programme / Project Activities"
 actual_col = f"{quarter} Actual Output"
 
+# Build drilldown column list
 drill_cols = [
     "Programme / Project",
     targets_col,
@@ -276,19 +279,20 @@ drill_cols = [
     "Remarks"
 ]
 
-# Insert Sector and MDA Revised at the top if present
 if "COFOG" in df.columns:
     drill_cols.insert(0, "COFOG")
 if "MDA REVISED" in df.columns:
     drill_cols.insert(1, "MDA REVISED")
-    
 
+available_cols = [col for col in drill_cols if col in filtered_df.columns]
+
+# Style function
 def style_drilldown(df, output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col):
     def highlight_perf(val):
         if pd.isna(val): return ""
-        if val >= 0.7: return "background-color: #b6e8b0"  # green
-        elif val >= 0.5: return "background-color: #fff4b3"  # amber
-        return "background-color: #f4b9b9"  # red
+        if val >= 0.7: return "background-color: #b6e8b0"
+        elif val >= 0.5: return "background-color: #fff4b3"
+        return "background-color: #f4b9b9"
 
     def highlight_tpr(val):
         if pd.isna(val): return ""
@@ -307,14 +311,17 @@ def style_drilldown(df, output_col, budget_col, approved_col, released_col, plan
             released_col: "₦{:,.0f}",
             budget_col: "{:.0%}",
         })
-
     return styled
 
-# Ensure columns exist before applying
-available_cols = [col for col in drill_cols if col in filtered_df.columns]
-styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col)
+# Display table
 st.caption(f"{len(filtered_df)} records matched your filters.")
-st.dataframe(styled_table, use_container_width=True)
+
+if view_option == "Styled View":
+    styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col)
+    st.dataframe(styled_table, use_container_width=True)
+else:
+    st.dataframe(filtered_df[available_cols], use_container_width=True)
+
 
 # === Section: Pivot Table Explorer ===
 show_pivot = False  # Set to True to reveal it
