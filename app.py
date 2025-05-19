@@ -10,6 +10,7 @@ import re
 import os
 import zipfile
 from fpdf import FPDF
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 class PDF(FPDF):
     def header(self):
@@ -251,10 +252,10 @@ col9.plotly_chart(donut_chart(avg_budget, "💰Budget Performance"), use_contain
 # === Section: Drilldown Table ===
 st.subheader("🧭 Drilldown Table")
 
-# View toggle
-view_option = st.radio("Select Table View Type:", ["Styled View", "Interactive View"], horizontal=True)
+# Table view option
+table_view = st.radio("Select Table View Type:", ["Styled View", "AgGrid Interactive"], horizontal=True)
 
-# Define key columns
+# Key columns
 output_col = f"{quarter} Output Performance"
 budget_col = f"{quarter} Budget Performance"
 released_col = f"Budget Released as at {quarter}"
@@ -264,7 +265,7 @@ tpr_score_col = "Cummulative TPR Score"
 targets_col = "Full Year Output Targets for Programme / Project Activities"
 actual_col = f"{quarter} Actual Output"
 
-# Build drilldown column list
+# Define columns
 drill_cols = [
     "Programme / Project",
     targets_col,
@@ -278,7 +279,6 @@ drill_cols = [
     budget_col,
     "Remarks"
 ]
-
 if "COFOG" in df.columns:
     drill_cols.insert(0, "COFOG")
 if "MDA REVISED" in df.columns:
@@ -286,7 +286,7 @@ if "MDA REVISED" in df.columns:
 
 available_cols = [col for col in drill_cols if col in filtered_df.columns]
 
-# Style function
+# Styling function
 def style_drilldown(df, output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col):
     def highlight_perf(val):
         if pd.isna(val): return ""
@@ -300,7 +300,7 @@ def style_drilldown(df, output_col, budget_col, approved_col, released_col, plan
         elif val >= 0.6: return "background-color: #fff4b3"
         return "background-color: #f4b9b9"
 
-    styled = df.style\
+    return df.style\
         .applymap(highlight_perf, subset=[output_col, budget_col])\
         .applymap(highlight_tpr, subset=[tpr_score_col])\
         .format({
@@ -311,16 +311,28 @@ def style_drilldown(df, output_col, budget_col, approved_col, released_col, plan
             released_col: "₦{:,.0f}",
             budget_col: "{:.0%}",
         })
-    return styled
 
 # Display table
 st.caption(f"{len(filtered_df)} records matched your filters.")
 
-if view_option == "Styled View":
+if table_view == "Styled View":
     styled_table = style_drilldown(filtered_df[available_cols], output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col)
     st.dataframe(styled_table, use_container_width=True)
-else:
-    st.dataframe(filtered_df[available_cols], use_container_width=True)
+
+else:  # AgGrid Interactive View
+    gb = GridOptionsBuilder.from_dataframe(filtered_df[available_cols])
+    gb.configure_default_column(editable=False, groupable=True)
+    gb.configure_selection("single")
+    gb.configure_pagination(paginationAutoPageSize=True)
+    grid_options = gb.build()
+
+    AgGrid(
+        filtered_df[available_cols],
+        gridOptions=grid_options,
+        height=800,
+        theme="material",
+        fit_columns_on_grid_load=True
+    )
 
 
 # === Section: Pivot Table Explorer ===
