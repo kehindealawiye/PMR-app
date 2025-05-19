@@ -6,4 +6,6 @@ fpdf
 kaleido
 openpyxl
 Pillow
+streamlit-aggrid
+
 
