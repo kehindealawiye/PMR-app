@@ -262,7 +262,7 @@ if selected_sector != "All":
 if selected_mda != "All":
     filtered_df = filtered_df[filtered_df[mda_col] == selected_mda]
 
-if selected_project != "All":
+if selected_proj != "All":
     filtered_df = filtered_df[filtered_df["Programme / Project"] == selected_project]
 
 # === Section: Drilldown Table ===
@@ -613,11 +613,6 @@ if st.button("📥💾 Download All MDAs in Selected Sector as PDF"):
             for i in range(3, 6):
                 x = margin_left + (i - 3) * (block_width + spacing)
                 draw_kpi_card(x, y_bottom, *kpi_blocks[i])
-
-            # Footer
-            pdf.set_y(178)
-            pdf.set_font("Arial", "I", 8)
-            pdf.cell(0, 10, encode_latin(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"), ln=True, align="R")
 
         pdf.output(tmpfile.name)
         with open(tmpfile.name, "rb") as f:
