@@ -131,6 +131,7 @@ planned_col = f"Planned {quarter} Perf"
 mda_col = "MDA REVISED"
 sector_col = "COFOG"
 kpi_col = f"{quarter} Output Target (in numbers)"
+goal_col = "State Level Goal"
 
 # === Section: Clean Data ===
 df[output_col] = pd.to_numeric(df.get(output_col), errors="coerce")
