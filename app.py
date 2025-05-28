@@ -164,54 +164,66 @@ def tpr_category(score):
 df["TPR Score"] = pd.to_numeric(df["Cummulative TPR Score"], errors="coerce")
 df["TPR Status"] = df["TPR Score"].apply(tpr_category)
 
-# === Section: Dashboard Filters ===
+# === Section: Dashboard Filters with Dependency Reset ===
 st.subheader("Filters")
 
-colf1, colf2, colf3, colf4 = st.columns(4)
+# Set session state keys
+if "prev_goal" not in st.session_state:
+    st.session_state.prev_goal = None
+
+# Layout columns
+colf0, colf1, colf2, colf3, colf4 = st.columns(5)
+
+# State Level Goal
+goal_options = ["All"] + sorted(df[goal_col].dropna().unique().tolist())
+selected_goal = colf0.selectbox("State Level Goal", goal_options, key="selected_goal")
+
+# Reset filters if goal has changed
+if st.session_state.prev_goal != selected_goal:
+    st.session_state.prev_goal = selected_goal
+    st.session_state.selected_sector = "All"
+    st.session_state.selected_mda = "All"
+    st.session_state.selected_proj = "All"
+
+# Filter based on goal
+goal_filtered_df = df if selected_goal == "All" else df[df[goal_col] == selected_goal]
 
 # TPR Status
-tpr_options = ["All"] + sorted(df["TPR Status"].dropna().unique().tolist())
+tpr_options = ["All"] + sorted(goal_filtered_df["TPR Status"].dropna().unique().tolist())
 selected_tpr = colf1.selectbox("TPR Status", tpr_options)
 
 # Sector
-sector_options = ["All"] + sorted(df["COFOG"].dropna().unique().tolist())
-selected_sector = colf2.selectbox("Sector", sector_options)
+sector_options = ["All"] + sorted(goal_filtered_df["COFOG"].dropna().unique().tolist())
+selected_sector = colf2.selectbox("Sector", sector_options, key="selected_sector")
 
-# MDA filtered by selected sector
+# MDA
 if selected_sector != "All":
-    mda_subset = df[df["COFOG"] == selected_sector]
+    mda_subset = goal_filtered_df[goal_filtered_df["COFOG"] == selected_sector]
 else:
-    mda_subset = df
+    mda_subset = goal_filtered_df
 
-if mda_subset is not None and mda_col in mda_subset.columns:
-    mda_options = ["All"] + sorted(mda_subset[mda_col].dropna().unique().tolist())
-else:
-    mda_options = ["All"]
-
-# MDA dropdown with memory-aware selection
+mda_options = ["All"] + sorted(mda_subset[mda_col].dropna().unique().tolist())
 selected_mda = colf3.selectbox("MDA", mda_options, key="selected_mda")
 
-
-# Programme/Project (filtered by MDA)
+# Project
 if selected_mda != "All":
     proj_subset = mda_subset[mda_subset[mda_col] == selected_mda]
 else:
     proj_subset = mda_subset
 
 proj_options = ["All"] + sorted(proj_subset["Programme / Project"].dropna().unique().tolist())
-selected_proj = colf4.selectbox("Programme / Project", proj_options)
+selected_proj = colf4.selectbox("Programme / Project", proj_options, key="selected_proj")
 
-# Apply filters
-filtered_df = df.copy()
+# Final filtered dataframe
+filtered_df = goal_filtered_df.copy()
 if selected_tpr != "All":
     filtered_df = filtered_df[filtered_df["TPR Status"] == selected_tpr]
 if selected_sector != "All":
-    filtered_df = filtered_df[filtered_df["Sector"] == selected_sector]
+    filtered_df = filtered_df[filtered_df["COFOG"] == selected_sector]
 if selected_mda != "All":
     filtered_df = filtered_df[filtered_df[mda_col] == selected_mda]
 if selected_proj != "All":
     filtered_df = filtered_df[filtered_df["Programme / Project"] == selected_proj]
-    
     
 # === Section: Summary Cards ===
 avg_output = filtered_df[output_col].mean(skipna=True)
