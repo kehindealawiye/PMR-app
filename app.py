@@ -344,16 +344,34 @@ def style_drilldown(df, output_col, budget_col, approved_col, released_col, plan
         except:
             return ""
 
+    def safe_format_percent(val):
+        try:
+            return "{:.0%}".format(float(val))
+        except:
+            return val
+
+    def safe_format_currency(val):
+        try:
+            return "₦{:,.0f}".format(float(val))
+        except:
+            return val
+
+    def safe_format_plain_percent(val):
+        try:
+            return "{:.0f}%".format(float(val))
+        except:
+            return val
+
     return df.style\
         .applymap(highlight_perf, subset=[output_col, budget_col])\
         .applymap(highlight_tpr, subset=[tpr_score_col])\
         .format({
-            output_col: "{:.0%}",
-            planned_col: "{:.0f}%",
-            tpr_score_col: "{:.0%}",
-            approved_col: "₦{:,.0f}",
-            released_col: "₦{:,.0f}",
-            budget_col: "{:.0%}",
+            output_col: safe_format_percent,
+            planned_col: safe_format_plain_percent,
+            tpr_score_col: safe_format_percent,
+            approved_col: safe_format_currency,
+            released_col: safe_format_currency,
+            budget_col: safe_format_percent,
         })
 
 # === Display Table ===
