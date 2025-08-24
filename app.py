@@ -265,21 +265,6 @@ col8, col9 = st.columns(2)
 col8.plotly_chart(donut_chart(avg_output, "🎯Output Performance"), use_container_width=True)
 col9.plotly_chart(donut_chart(avg_budget, "💰Budget Performance"), use_container_width=True)
 
-# === Section: Apply Filters ===
-filtered_df = df.copy()
-
-if selected_tpr != "All":
-    filtered_df = filtered_df[filtered_df["TPR Status"] == selected_tpr]
-
-if selected_sector != "All":
-    filtered_df = filtered_df[filtered_df["COFOG"] == selected_sector]
-
-if selected_mda != "All":
-    filtered_df = filtered_df[filtered_df[mda_col] == selected_mda]
-
-if selected_proj != "All":
-    filtered_df = filtered_df[filtered_df["Programme / Project"] == selected_project]
-
 # === Section: Drilldown Table with Toggle ===
 st.subheader("🧭 Drilldown Table")
 
