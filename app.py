@@ -46,6 +46,8 @@ year = None
 if source_option == "Explore Default reports":
     # Define your preloaded report options
     default_files = {
+        "Q2 2025 PMR Report": "https://docs.google.com/spreadsheets/d/1HlhYGE8eofEih5gVJbu9fBYJc0oppT1nJX7Lmy0eKgQ/edit?usp=drivesdk", 
+        "Q1 2025 PMR Report": "https://docs.google.com/spreadsheets/d/1HlhYGE8eofEih5gVJbu9fBYJc0oppT1nJX7Lmy0eKgQ/edit?usp=drivesdk", 
         "Q4 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Y2024%20PMR%20dummy.xlsx",
         "Q3 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q3%20Y2024%20Consolidated%20PMR%20.xlsx",
         "Q2 2024 PMR Report": "https://raw.githubusercontent.com/kehindealawiye/PMR-app/refs/heads/main/Q2%202024%20Consolidated%20PMR%20.xlsx",
