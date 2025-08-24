@@ -318,19 +318,31 @@ if "MDA REVISED" in df.columns:
 
 available_cols = [col for col in drill_cols if col in filtered_df.columns]
 
-# === Styled View Function ===
+# === Styled View Function (Safe) ===
 def style_drilldown(df, output_col, budget_col, approved_col, released_col, planned_col, tpr_score_col):
     def highlight_perf(val):
-        if pd.isna(val): return ""
-        if val >= 0.7: return "background-color: #b6e8b0"
-        elif val >= 0.5: return "background-color: #fff4b3"
-        return "background-color: #f4b9b9"
+        try:
+            val = float(val)
+            if val >= 0.7:
+                return "background-color: #b6e8b0"
+            elif val >= 0.5:
+                return "background-color: #fff4b3"
+            else:
+                return "background-color: #f4b9b9"
+        except:
+            return ""
 
     def highlight_tpr(val):
-        if pd.isna(val): return ""
-        if val >= 0.8: return "background-color: #b6e8b0"
-        elif val >= 0.6: return "background-color: #fff4b3"
-        return "background-color: #f4b9b9"
+        try:
+            val = float(val)
+            if val >= 0.8:
+                return "background-color: #b6e8b0"
+            elif val >= 0.6:
+                return "background-color: #fff4b3"
+            else:
+                return "background-color: #f4b9b9"
+        except:
+            return ""
 
     return df.style\
         .applymap(highlight_perf, subset=[output_col, budget_col])\
