@@ -59,7 +59,7 @@ if source_option == "Explore Default reports":
 
     try:
         if "docs.google.com" in data_url:
-            df = pd.read_csv(data_url)
+            df = pd.read_excel(data_url, sheet_name="PMR", engine="openpyxl")
         else:
             df = pd.read_excel(data_url, sheet_name="PMR", engine="openpyxl")
 
